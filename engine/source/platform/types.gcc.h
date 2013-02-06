@@ -100,6 +100,10 @@ typedef unsigned long long  U64;
 #  define TORQUE_SUPPORTS_NASM
 #endif
 #  include "platform/types.ppc.h"
+#elif defined(__native_client__)
+#  define TORQUE_OS_STRING "NaCL"
+#  define TORQUE_OS_NACL
+#  include "platform/types.posix.h"
 #else 
 #  error "GCC: Unsupported Operating System"
 #endif
