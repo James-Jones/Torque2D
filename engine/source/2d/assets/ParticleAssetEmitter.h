@@ -51,7 +51,7 @@ class ParticleAsset;
 
 class ParticleAssetEmitter : public SimObject, public AssetPtrCallback
 {
-    friend ParticleAsset;
+    friend class ParticleAsset;
 
 public:
     enum ParticleOrientationType
