@@ -281,6 +281,8 @@ void BatchRender::flushInternal( void )
     if ( mQuadCount == 0 )
         return;
 
+#ifndef TORQUE_GLESv2
+
     PROFILE_START(T2D_BatchRender_flush);
 
     // Stats.
@@ -460,6 +462,8 @@ void BatchRender::flushInternal( void )
     mColorCount = 0;
 
     PROFILE_END();   // T2D_BatchRender_flush
+
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -474,6 +478,7 @@ void BatchRender::RenderQuad(
         const Vector2& texturePos2,
         const Vector2& texturePos3 )
 {
+#ifndef TORQUE_GLES
     glBegin( GL_TRIANGLE_STRIP );
         glTexCoord2f( texturePos0.x, texturePos0.y );
         glVertex2f( vertexPos0.x, vertexPos0.y );
@@ -484,6 +489,7 @@ void BatchRender::RenderQuad(
         glTexCoord2f( texturePos2.x, texturePos2.y );
         glVertex2f( vertexPos2.x, vertexPos2.y );
     glEnd();
+#endif
 }
 
 

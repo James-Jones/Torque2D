@@ -2437,9 +2437,9 @@ bool OpenALInit()
    mDevice = (ALCvoid *)alcOpenDevice(deviceSpecifier);
 
 #elif defined(TORQUE_OS_OSX)
-   mDevice = alcOpenDevice((const ALCchar*)NULL);
+   mDevice = alcOpenDevice(NULL);
 #else
-   mDevice = (ALCvoid *)alcOpenDevice((const ALCchar*)NULL);
+   mDevice = (ALCvoid *)alcOpenDevice(NULL);
 #endif
    if (mDevice == (ALCvoid *)NULL)
       return false;

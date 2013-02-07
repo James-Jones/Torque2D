@@ -118,6 +118,7 @@ void ShapeVector::onRemove()
 
 void ShapeVector::sceneRender( const SceneRenderState* pSceneRenderState, const SceneRenderRequest* pSceneRenderRequest, BatchRender* pBatchRenderer )
 {
+#ifndef TORQUE_GLESv2
     // Fetch Vertex Count.
     const U32 vertexCount = mPolygonLocalList.size();
 
@@ -156,10 +157,12 @@ void ShapeVector::sceneRender( const SceneRenderState* pSceneRenderState, const 
 
     // Restore Matrix.
     glPopMatrix();
+#endif
 }
 
 void ShapeVector::renderCircleShape(Vector2 position, F32 radius)
 {
+#ifndef TORQUE_GLESv2
     if (mFillMode)
     {
         const float32 k_segments = 32.0f;
@@ -209,11 +212,14 @@ void ShapeVector::renderCircleShape(Vector2 position, F32 radius)
         }
         glEnd();
     }
+#endif
 }
 
 void ShapeVector::renderPolygonShape(U32 vertexCount)
 {
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+
+#elif defined(TORQUE_GLES)
     // Fill Mode?
     if ( mFillMode )
     {

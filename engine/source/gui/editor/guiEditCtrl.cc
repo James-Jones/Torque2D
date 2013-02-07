@@ -550,6 +550,7 @@ void GuiEditCtrl::onRender(Point2I offset, const RectI &updateRect)
       }
       AssertFatal(ndot <= maxdot, "dot overflow");
       
+#ifndef TORQUE_GLESv2
       // draw the points.
       glEnableClientState(GL_VERTEX_ARRAY);
       glEnable( GL_BLEND );
@@ -560,6 +561,7 @@ void GuiEditCtrl::onRender(Point2I offset, const RectI &updateRect)
       glDrawArrays( GL_POINTS, 0, ndot);
       glDisableClientState(GL_VERTEX_ARRAY);
       glDisable(GL_BLEND);
+#endif
       delete[] dots;
    }
 }

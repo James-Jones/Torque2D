@@ -26,11 +26,13 @@
 
 void dglLoadMatrix(const MatrixF *m)
 {
+#ifndef TORQUE_GLESv2
    //F32 mat[16];
    //m->transposeTo(mat);
    const_cast<MatrixF*>(m)->transpose();
    glLoadMatrixf(*m);
    const_cast<MatrixF*>(m)->transpose();
+#endif
 }
 
 void dglMultMatrix(const MatrixF *m)
@@ -56,22 +58,27 @@ void dglMultMatrix(const MatrixF *m)
 //      mp[14],
 //      mp[15]);
 
-
+#ifndef TORQUE_GLESv2
    const_cast<MatrixF*>(m)->transpose();
    glMultMatrixf(*m);
    const_cast<MatrixF*>(m)->transpose();
+#endif
 }
 
 void dglGetModelview(MatrixF *m)
 {
+#ifndef TORQUE_GLESv2
    glGetFloatv(GL_MODELVIEW_MATRIX, *m);
    m->transpose();
+#endif
 }
 
 void dglGetProjection(MatrixF *m)
 {
+#ifndef TORQUE_GLESv2
    glGetFloatv(GL_PROJECTION_MATRIX, *m);
    m->transpose();
+#endif
 }
 
 static F64 frustLeft = 0, frustRight = 1, frustBottom, frustTop, frustNear, frustFar;
@@ -97,9 +104,11 @@ void dglSetFrustum(F64 left, F64 right, F64 bottom, F64 top, F64 nearPlane, F64 
    frustNear = nearPlane;
    frustFar = farPlane;
    isOrtho = ortho;
+
+#ifndef TORQUE_GLESv2
    if (ortho)
    {
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
       glOrthof(left, right, bottom, top, nearPlane, farPlane);
 #else
       glOrtho(left, right, bottom, top, nearPlane, farPlane);
@@ -111,7 +120,9 @@ void dglSetFrustum(F64 left, F64 right, F64 bottom, F64 top, F64 nearPlane, F64 
       glFrustum(left, right, bottom, top, nearPlane, farPlane);
       worldToScreenScale = F32((frustNear * viewPort.extent.x) / frustRight - frustLeft);
    }
+
    glMultMatrixf(darkToOGLCoord);
+#endif
 }
 
 void dglGetFrustum(F64 *left, F64 *right, F64 *bottom, F64 *top, F64 *nearPlane, F64 *farPlane)

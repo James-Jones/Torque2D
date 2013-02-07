@@ -50,7 +50,7 @@ S32 TextureManager::mTextureResidentCount = 0;
 
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
 #define EXT_ARRAY_SIZE 4
     static const char* extArray[EXT_ARRAY_SIZE] = { "", ".pvr", ".jpg", ".png"};
 #else
@@ -93,7 +93,7 @@ ConsoleFunction(setOpenGLTextureCompressionHint, void, 2, 2, " ( hint ) Use the 
 
     TextureManager::mTextureCompressionHint = newHint;
 
-#if !defined(TORQUE_OS_IOS)
+#if !defined(TORQUE_GLES)
     if (dglDoesSupportTextureCompression())
         glHint(GL_TEXTURE_COMPRESSION_HINT_ARB, TextureManager::mTextureCompressionHint);
 #endif
@@ -392,7 +392,7 @@ void TextureManager::getSourceDestByteFormat(GBitmap *pBitmap, U32 *sourceFormat
 {
     *byteFormat = GL_UNSIGNED_BYTE;
     U32 byteSize = 1;
-#if defined(TORQUE_OS_IOS)
+#if defined(TORQUE_GLES)
     switch(pBitmap->getFormat()) 
     {
     case GBitmap::Intensity:
@@ -528,7 +528,7 @@ void TextureManager::getSourceDestByteFormat(GBitmap *pBitmap, U32 *sourceFormat
             *texelSize = 4 * byteSize;
         }
     }
-#endif // defined(TORQUE_OS_IOS)
+#endif // defined(TORQUE_GLES)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -604,11 +604,11 @@ void TextureManager::refresh( TextureObject* pTextureObject )
     U32 sourceFormat, destFormat, byteFormat, texelSize;
     getSourceDestByteFormat(pSourceBitmap, &sourceFormat, &destFormat, &byteFormat, &texelSize);
 
-#if defined(TORQUE_OS_IOS)
+#if defined(TORQUE_GLES)
     bool isCompressed = (pNewBitmap->getFormat() >= GBitmap::PVR2) && (pNewBitmap->getFormat() <= GBitmap::PVR4A);
 #endif
 
-#if defined(TORQUE_OS_IOS)
+#if defined(TORQUE_GLES)
     if (isCompressed) {
         switch (pNewBitmap->getFormat()) {
             case GBitmap::PVR2:
@@ -673,10 +673,18 @@ void TextureManager::refresh( TextureObject* pTextureObject )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
 
     GLenum glClamp;
+
+#ifdef TORQUE_GLES
+    if ( pTextureObject->getClamp() )
+        glClamp = GL_CLAMP_TO_EDGE;
+    else
+        glClamp = GL_REPEAT;
+#else
     if ( pTextureObject->getClamp() )
         glClamp = dglDoesSupportEdgeClamp() ? GL_CLAMP_TO_EDGE : GL_CLAMP;
     else
         glClamp = GL_REPEAT;
+#endif
 
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glClamp );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glClamp );
@@ -866,7 +874,7 @@ GBitmap *TextureManager::loadBitmap( const char* pTextureKey, bool recurse, bool
     U32 len = dStrlen(fileNameBuffer);
     for (U32 i = 0; i < EXT_ARRAY_SIZE && bmp == NULL; i++)
     {
-#if defined(TORQUE_OS_IOS)
+#if defined(TORQUE_GLES)
         // check to see if requested no-compression...
         if (nocompression && (dStrncmp( extArray[i], ".pvr", 4 ) == 0)) {
             continue;
@@ -910,11 +918,15 @@ void TextureManager::dumpMetrics( void )
     TextureObject* pProbe = TextureDictionary::TextureObjectChain;
     while (pProbe != NULL) 
     {
+#ifndef TORQUE_GLES
         GLboolean isTextureResident = false;
+#endif
         if ( pProbe->mGLTextureName != 0 )
         {
             textureResidentCount++;
+#ifndef TORQUE_GLES
             glAreTexturesResident( 1, &pProbe->mGLTextureName, &isTextureResident );
+#endif
         }
 
         textureResidentSize += pProbe->mTextureResidentSize;
@@ -926,7 +938,11 @@ void TextureManager::dumpMetrics( void )
             pProbe->mBitmapWidth,pProbe->mBitmapHeight, pProbe->mBitmapResidentSize,
             pProbe->mTextureWidth, pProbe->mTextureHeight, pProbe->mTextureResidentSize, pProbe->mTextureResidentWasteSize,
             pProbe->mRefCount,
+#ifdef TORQUE_GLES
+            "Unknown",
+#else
             isTextureResident == 0 ? "NO" : "YES",
+#endif
             pProbe->mTextureKey );
 
         pProbe = pProbe->next;
@@ -962,6 +978,9 @@ void TextureManager::dumpMetrics( void )
 
 F32 TextureManager::getResidentFraction()
 {
+#ifdef TORQUE_GLES
+    return 1.0f;
+#else
     U32 resident = 0;
     U32 total    = 0;
 
@@ -991,4 +1010,5 @@ F32 TextureManager::getResidentFraction()
             resident++;
 
     return (F32(resident) / F32(total));
+#endif
 }

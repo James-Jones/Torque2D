@@ -1584,6 +1584,7 @@ void SceneWindow::onRender( Point2I offset, const RectI& updateRect )
         sceneMax += mCameraShakeOffset;
     }
 
+#ifndef TORQUE_GLESv2
     // Setup new logical coordinate system.
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -1600,6 +1601,7 @@ void SceneWindow::onRender( Point2I offset, const RectI& updateRect )
     // Disable Alpha Test by default
     glDisable( GL_ALPHA_TEST );    
     glDisable( GL_DEPTH_TEST );
+#endif
 
     // Get Debug Stats.
     DebugStats& debugStats = pScene->getDebugStats();
@@ -1617,12 +1619,14 @@ void SceneWindow::onRender( Point2I offset, const RectI& updateRect )
     // Render View.
     pScene->sceneRender( &sceneRenderState );
 
+#ifndef TORQUE_GLESv2
     // Restore Matrices.
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
+#endif
 
     // Render the metrics.
     renderMetricsOverlay( offset, updateRect );
@@ -1638,6 +1642,7 @@ void SceneWindow::onRender( Point2I offset, const RectI& updateRect )
 
 void SceneWindow::renderMetricsOverlay( Point2I offset, const RectI& updateRect )
 {
+#ifndef TORQUE_GLESv2
     // Debug Profiling.
     PROFILE_SCOPE(SceneWindow_RenderMetricsOverlay);
 
@@ -1963,4 +1968,7 @@ void SceneWindow::renderMetricsOverlay( Point2I offset, const RectI& updateRect 
 
     // Clear Bitmap Modulation.
     dglClearBitmapModulation();
+
+
+#endif
 }

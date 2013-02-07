@@ -67,7 +67,7 @@ class GBitmap: public ResourceInstance
       RGB565     = 5,
       RGB5551    = 6,
       Luminance  = 7
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
        , PVR2 = 8,
        PVR2A = 9,
        PVR4 = 10,

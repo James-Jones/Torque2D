@@ -122,9 +122,11 @@ void GuiConsoleTextCtrl::onRender(Point2I offset, const RectI &updateRect)
 
    // draw the border
    r.extent += r.point;
+#ifndef TORQUE_GLESv2
    glColor4ub(0, 0, 0, 0);
+#endif
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
    Point2I topleft(r.point.x,  r.point.y);
    Point2I bottomRight(r.extent.x-1, r.extent.y-1);
 	//this was the same drawing as dglDrawRect

@@ -581,9 +581,12 @@ void ParticlePlayer::sceneRender( const SceneRenderState* pSceneRenderState, con
         // Set alpha-testing.
         pBatchRenderer->setAlphaTestMode( pParticleAssetEmitter->getAlphaTest() );
 
+#ifndef TORQUE_GLESv2
         // Save the transformation.
         glPushMatrix();
+#endif
 
+#ifndef TORQUE_GLESv2
         // Is the Position attached to the emitter?
         if ( pParticleAssetEmitter->getAttachPositionToEmitter() )
         {
@@ -601,6 +604,7 @@ void ParticlePlayer::sceneRender( const SceneRenderState* pSceneRenderState, con
                 glRotatef( mRadToDeg(getRenderAngle()), 0.0f, 0.0f, 1.0f );
             }
         }
+#endif
 
         // Frame texture.
         TextureHandle frameTexture;
@@ -676,8 +680,10 @@ void ParticlePlayer::sceneRender( const SceneRenderState* pSceneRenderState, con
         // Flush.
         pBatchRenderer->flush( getScene()->getDebugStats().batchIsolatedFlush );
 
+#ifndef TORQUE_GLESv2
         // Restore the transformation.
         glPopMatrix();
+#endif
     }
 }
 

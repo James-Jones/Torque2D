@@ -339,6 +339,7 @@ void Scroller::sceneRender( const SceneRenderState* pSceneRenderState, const Sce
     // Flush any existing batches.
     pBatchRenderer->flush();
 
+#ifndef TORQUE_GLESv2
     // Set-up a set of clip-planes against the OOBB.
     GLdouble left[4] = {1, 0, 0, -renderOOBB0.x};
     GLdouble right[4] = {-1, 0, 0, renderOOBB1.x};
@@ -352,6 +353,7 @@ void Scroller::sceneRender( const SceneRenderState* pSceneRenderState, const Sce
     glEnable(GL_CLIP_PLANE1);
     glEnable(GL_CLIP_PLANE2);
     glEnable(GL_CLIP_PLANE3);
+#endif
 
     // Render repeat Y.
     for ( S32 repeatIndexY = 0; repeatIndexY < wholeRegionY; ++repeatIndexY )
@@ -395,11 +397,13 @@ void Scroller::sceneRender( const SceneRenderState* pSceneRenderState, const Sce
     // Flush the scroller batches.
     pBatchRenderer->flush();
 
+#ifndef TORQUE_GLESv2
     // Disable the OOBB clip-planes.
     glDisable(GL_CLIP_PLANE0);
     glDisable(GL_CLIP_PLANE1);
     glDisable(GL_CLIP_PLANE2);
     glDisable(GL_CLIP_PLANE3);
+#endif
 }
 
 //------------------------------------------------------------------------------

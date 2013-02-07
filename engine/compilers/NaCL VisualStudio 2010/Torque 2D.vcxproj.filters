@@ -2427,6 +2427,9 @@
     <ClInclude Include="..\..\source\persistence\taml\tamlCustom.h">
       <Filter>persistence\taml</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\platformNaCL\platformGL.h">
+      <Filter>platformNaCL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\source\math\mMath_ASM.asm">

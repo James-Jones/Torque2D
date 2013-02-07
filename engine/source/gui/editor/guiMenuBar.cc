@@ -1145,7 +1145,9 @@ void GuiMenuTextListCtrl::onRenderCell(Point2I offset, Point2I cell, bool select
    idx = mList[cell.y].text[1];
    if(idx != 1)
    {
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+//TODO
+#elif defined(TORQUE_GLES)
 // PUAP -Mat untested	
 //How are these used/made? cannot create in TGB GUI editor
        if(selected || mouseOver)

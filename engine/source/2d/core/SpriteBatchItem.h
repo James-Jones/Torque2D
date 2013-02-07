@@ -142,7 +142,7 @@ public:
         // This should be as unique as possible as it is used for hashing.
         operator const U32() const
         {
-            return (U32)(mArgString) * (U32)2654435761;
+            return (U32)(mArgString) * (U32)2654435761U;
         }
 
         /// Value equality check for hashing.

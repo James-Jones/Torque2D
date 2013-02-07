@@ -2646,6 +2646,7 @@ Vector2 SceneObject::getEdgeCollisionShapeAdjacentEnd( const U32 shapeIndex ) co
 
 void SceneObject::setBlendOptions( void )
 {
+#ifndef TORQUE_GLESv2
     // Set Blend Status.
     if ( mBlendMode )
     {
@@ -2677,12 +2678,14 @@ void SceneObject::setBlendOptions( void )
         // Disable Test.
         glDisable( GL_ALPHA_TEST );
     }
+#endif
 }
 
 //-----------------------------------------------------------------------------
 
 void SceneObject::resetBlendOptions( void )
 {
+#ifndef TORQUE_GLESv2
     // Disable Blending.
     glDisable( GL_BLEND );
 
@@ -2690,6 +2693,7 @@ void SceneObject::resetBlendOptions( void )
 
     // Reset Colour.
     glColor4f(1,1,1,1);
+#endif
 }
 
 //---------------------------------------------------------------------------------------------

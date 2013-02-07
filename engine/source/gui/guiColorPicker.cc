@@ -100,7 +100,17 @@ void GuiColorPickerCtrl::initPersistFields()
 
 //--------------------------------------------------------------------------
 // Function to draw a box which can have 4 different colors in each corner blended together
-#if defined(TORQUE_OS_IOS)
+#if defined(TORQUE_GLESv2)
+void dglDrawBlendBox(RectI &bounds, ColorF &c1, ColorF &c2, ColorF &c3, ColorF &c4)
+{
+}
+void dglDrawBlendRangeBox(RectI &bounds, bool vertical, U8 numColors, ColorI *colors)
+{
+}
+void GuiColorPickerCtrl::renderColorBox(RectI &bounds)
+{
+}
+#elif defined(TORQUE_GLES)
 void dglDrawBlendBox(RectI &bounds, ColorF &c1, ColorF &c2, ColorF &c3, ColorF &c4)
 {
    S32 left = bounds.point.x, right = bounds.point.x + bounds.extent.x - 1;
@@ -591,7 +601,9 @@ void GuiColorPickerCtrl::onRender(Point2I offset, const RectI& updateRect)
 
          GLubyte rBuffer[4] = { 255, 255, 255, 255 };
 
+#ifndef TORQUE_GLES
          glReadBuffer( GL_BACK );
+#endif
 
          U32 buf_x = offset.x + mSelectorPos.x + 1;
          U32 buf_y = extent.y - ( offset.y + mSelectorPos.y + 1 );

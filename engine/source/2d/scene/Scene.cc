@@ -924,11 +924,13 @@ void Scene::sceneRender( const SceneRenderState* pSceneRenderState )
     b2AABB cameraAABB;
     CoreMath::mRotateAABB( pSceneRenderState->mRenderAABB, pSceneRenderState->mRenderAngle, cameraAABB );
 
+#ifndef TORQUE_GLESv2
     // Rotate the world matrix by the camera angle.
     const Vector2& cameraPosition = pSceneRenderState->mRenderPosition;
     glTranslatef( cameraPosition.x, cameraPosition.y, 0.0f );
     glRotatef( mRadToDeg(pSceneRenderState->mRenderAngle), 0.0f, 0.0f, 1.0f );
     glTranslatef( -cameraPosition.x, -cameraPosition.y, 0.0f );
+#endif
 
     // Clear world query.
     mpWorldQuery->clearQuery();

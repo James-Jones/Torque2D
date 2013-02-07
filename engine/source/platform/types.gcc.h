@@ -87,6 +87,7 @@ typedef unsigned long long  U64;
 	#ifndef TORQUE_OS_IOS
 		#define TORQUE_OS_IOS
 	#endif
+#  define TORQUE_GLESv1
 #  include "platform/types.arm.h"
 
 #elif defined(__APPLE__)
@@ -103,11 +104,15 @@ typedef unsigned long long  U64;
 #elif defined(__native_client__)
 #  define TORQUE_OS_STRING "NaCL"
 #  define TORQUE_OS_NACL
+#  define TORQUE_GLESv2
 #  include "platform/types.posix.h"
 #else 
 #  error "GCC: Unsupported Operating System"
 #endif
 
+#if defined(TORQUE_GLESv1) || defined(TORQUE_GLESv2)
+#define TORQUE_GLES
+#endif
 
 //--------------------------------------
 // Identify the CPU

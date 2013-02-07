@@ -163,7 +163,9 @@ void GuiFilterCtrl::onRender(Point2I offset, const RectI &updateRect)
    ext.x -= 4;
    ext.y -= 4;
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+   //TODO
+#elif defined(TORQUE_GLES)
 	//this was the same drawing as dglDrawLine		<Mat>
 	dglDrawLine( (pos.x), (pos.y+ext.y), (pos.x+ext.x), (pos.y), ColorI(255 *0.9, 255 *0.9, 255 *0.9, 255 *1) );
 

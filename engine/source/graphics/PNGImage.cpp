@@ -508,8 +508,10 @@ ConsoleFunction(CaptureScreenArea, bool, 7, 7, "(posX, posY, width, height, file
         return false;
     }
 
+#ifndef TORQUE_GLES
     // Read gl pixels here
     glReadBuffer(GL_FRONT);
+#endif
    
     Point2I extent;
     extent.x = width;

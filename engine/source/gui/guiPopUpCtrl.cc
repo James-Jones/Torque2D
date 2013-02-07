@@ -1096,6 +1096,7 @@ void GuiPopUpMenuCtrl::onRender(Point2I offset, const RectI &updateRect)
       // Restore the clip rectangle.
       dglSetClipRect( previousClipRect );
 
+#ifndef TORQUE_GLES
       // If we're rendering a bitmap border, then it will take care of the arrow.
       if(!(mProfile->mProfileForChildren && mProfile->mBitmapArrayRects.size()))
       {
@@ -1113,6 +1114,7 @@ void GuiPopUpMenuCtrl::onRender(Point2I offset, const RectI &updateRect)
          glVertex2fv( Point3F(middle,bottom,0) );
          glEnd();
       }
+#endif
 }
 
 //------------------------------------------------------------------------------

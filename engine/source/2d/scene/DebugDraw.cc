@@ -261,6 +261,7 @@ void DebugDraw::DrawJoints( b2World* pWorld )
 
 void DebugDraw::DrawPolygon( const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
 {
+#ifndef TORQUE_GLES
     // Debug Profiling.
     PROFILE_SCOPE(DebugDraw_DrawPolygon);
 
@@ -271,12 +272,14 @@ void DebugDraw::DrawPolygon( const b2Vec2* vertices, int32 vertexCount, const b2
         glVertex2f(vertices[i].x, vertices[i].y);
     }
     glEnd();
+#endif
 }
 
 //-----------------------------------------------------------------------------
 
 void DebugDraw::DrawSolidPolygon( const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
 {
+#ifndef TORQUE_GLES
     // Debug Profiling.
     PROFILE_SCOPE(DebugDraw_DrawSolidPolygon);
 
@@ -298,12 +301,14 @@ void DebugDraw::DrawSolidPolygon( const b2Vec2* vertices, int32 vertexCount, con
         glVertex2f(vertices[i].x, vertices[i].y);
     }
     glEnd();
+#endif
 }
 
 //-----------------------------------------------------------------------------
 
 void DebugDraw::DrawCircle( const b2Vec2& center, float32 radius, const b2Color& color)
 {
+#ifndef TORQUE_GLES
     // Debug Profiling.
     PROFILE_SCOPE(DebugDraw_DrawCircle);
 
@@ -319,12 +324,14 @@ void DebugDraw::DrawCircle( const b2Vec2& center, float32 radius, const b2Color&
         theta += k_increment;
     }
     glEnd();
+#endif
 }
     
 //-----------------------------------------------------------------------------
 
 void DebugDraw::DrawSolidCircle( const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
 {
+#ifndef TORQUE_GLES
     // Debug Profiling.
     PROFILE_SCOPE(DebugDraw_DrawSolidCircle);
 
@@ -360,23 +367,27 @@ void DebugDraw::DrawSolidCircle( const b2Vec2& center, float32 radius, const b2V
     glVertex2f(center.x, center.y);
     glVertex2f(p.x, p.y);
     glEnd();
+#endif
 }
     
 //-----------------------------------------------------------------------------
 
 void DebugDraw::DrawSegment( const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
 {
+#ifndef TORQUE_GLES
     glColor3f(color.r, color.g, color.b);
     glBegin(GL_LINES);
     glVertex2f(p1.x, p1.y);
     glVertex2f(p2.x, p2.y);
     glEnd();
+#endif
 }
 
 //-----------------------------------------------------------------------------
 
 void DebugDraw::DrawTransform(const b2Transform& xf)
 {
+#ifndef TORQUE_GLES
     b2Vec2 p1 = xf.p, p2;
     const float32 k_axisScale = 0.4f;
     glBegin(GL_LINES);
@@ -392,17 +403,20 @@ void DebugDraw::DrawTransform(const b2Transform& xf)
     glVertex2f(p2.x, p2.y);
 
     glEnd();
+#endif
 }
 
 //-----------------------------------------------------------------------------
 
 void DebugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)
 {
+#ifndef TORQUE_GLES
     glPointSize(size);
     glBegin(GL_POINTS);
     glColor3f(color.r, color.g, color.b);
     glVertex2f(p.x, p.y);
     glEnd();
     glPointSize(1.0f);
+#endif
 }
 

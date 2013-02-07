@@ -383,10 +383,12 @@ void GuiSceneObjectCtrl::onRender(Point2I offset, const RectI& updateRect)
       y1 *= -1;
       y2 *= -1;
 
+#ifndef TORQUE_GLESv2
       // Setup new logical coordinate system.
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
       glLoadIdentity();
+#endif
       RectI viewport;
       dglGetViewport(&viewport);
 
@@ -404,7 +406,9 @@ void GuiSceneObjectCtrl::onRender(Point2I offset, const RectI& updateRect)
       }
 
       // Setup Orthographic Projection for Object Area.
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+      //TODO
+#elif defined(TORQUE_GLES)
       glOrthof( x1, x2, y1, y2, 0.0f, MAX_LAYERS_SUPPORTED );
 #else
       glOrtho( x1, x2, y1, y2, 0.0f, MAX_LAYERS_SUPPORTED );
@@ -412,6 +416,7 @@ void GuiSceneObjectCtrl::onRender(Point2I offset, const RectI& updateRect)
       // Setup new viewport.
       dglSetViewport(objRect);
 
+#ifndef TORQUE_GLESv2
       // Set ModelView.
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
@@ -420,6 +425,7 @@ void GuiSceneObjectCtrl::onRender(Point2I offset, const RectI& updateRect)
       // Enable Alpha Test.
       glEnable        ( GL_ALPHA_TEST );
       glAlphaFunc     ( GL_GREATER, 0.0f );
+#endif
 
       // Calculate maximal clip bounds.
       RectF clipBounds( -x1,-y1, x2-x1, y2-y1 );
@@ -444,6 +450,7 @@ void GuiSceneObjectCtrl::onRender(Point2I offset, const RectI& updateRect)
 
       mSelectedSceneObject->sceneRender( &guiSceneRenderState, &guiSceneRenderRequest, &mBatchRenderer );
 
+#ifndef TORQUE_GLESv2
       // Restore Standard Settings.
       glDisable       ( GL_DEPTH_TEST );
       glDisable       ( GL_ALPHA_TEST );
@@ -453,6 +460,7 @@ void GuiSceneObjectCtrl::onRender(Point2I offset, const RectI& updateRect)
       glPopMatrix();
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
+#endif
    }
    else
    {

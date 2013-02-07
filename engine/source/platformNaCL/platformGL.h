@@ -24,7 +24,170 @@
 #ifndef _PLATFORMGL_H_
 #define _PLATFORMGL_H_
 
+#define MIN_RESOLUTION_X			320
+#define MIN_RESOLUTION_Y			320//for 320 x 480 or 480 x 320
+#define MIN_RESOLUTION_BIT_DEPTH	16
+#define MIN_RESOLUTION_XY_STRING	"320 320"
+
 #include "ppapi/gles2/gl2ext_ppapi.h"
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
+typedef double GLdouble;
+
+/// GL state information.
+struct GLState
+{
+   bool suppARBMultitexture;
+   bool suppEXTblendcolor;
+   bool suppEXTblendminmax;
+   bool suppPackedPixels;
+   bool suppTexEnvAdd;
+   bool suppLockedArrays;
+
+   bool suppTextureEnvCombine;
+   bool suppVertexArrayRange;
+   bool suppFogCoord;
+   bool suppEdgeClamp;
+
+   bool suppTextureCompression;
+   bool suppS3TC;
+   bool suppFXT1;
+   bool suppTexAnisotropic;
+
+   bool suppPalettedTexture;
+   bool suppVertexBuffer;
+   bool suppSwapInterval;
+
+   GLint maxFSAASamples;
+
+   unsigned int triCount[4];
+   unsigned int primCount[4];
+   unsigned int primMode; // 0-3
+
+   GLfloat maxAnisotropy;
+   GLint   maxTextureUnits;
+};
+
+extern GLState gGLState;
+
+extern bool gOpenGLDisablePT;
+extern bool gOpenGLDisableCVA;
+extern bool gOpenGLDisableTEC;
+extern bool gOpenGLDisableARBMT;
+extern bool gOpenGLDisableFC;
+extern bool gOpenGLDisableTCompress;
+extern bool gOpenGLNoEnvColor;
+extern float gOpenGLGammaCorrection;
+extern bool gOpenGLNoDrawArraysAlpha;
+
+//------------------------------------------------------------------------------
+/// Inline state getters for dgl
+//------------------------------------------------------------------------------
+inline void dglSetRenderPrimType(unsigned int type)
+{
+   gGLState.primMode = type;
+}
+
+inline void dglClearPrimMetrics()
+{
+   for(int i = 0; i < 4; i++)
+      gGLState.triCount[i] = gGLState.primCount[i] = 0;
+}
+
+inline bool dglDoesSupportPalettedTexture()
+{
+   return gGLState.suppPalettedTexture && (gOpenGLDisablePT == false);
+}
+
+inline bool dglDoesSupportCompiledVertexArray()
+{
+   return gGLState.suppLockedArrays && (gOpenGLDisableCVA == false);
+}
+
+inline bool dglDoesSupportTextureEnvCombine()
+{
+   return gGLState.suppTextureEnvCombine && (gOpenGLDisableTEC == false);
+}
+
+inline bool dglDoesSupportARBMultitexture()
+{
+   return gGLState.suppARBMultitexture && (gOpenGLDisableARBMT == false);
+}
+
+inline bool dglDoesSupportEXTBlendColor()
+{
+   return gGLState.suppEXTblendcolor;
+}
+
+inline bool dglDoesSupportEXTBlendMinMax()
+{
+   return gGLState.suppEXTblendminmax;
+}
+
+inline bool dglDoesSupportVertexArrayRange()
+{
+   return gGLState.suppVertexArrayRange;
+}
+
+inline bool dglDoesSupportFogCoord()
+{
+   return gGLState.suppFogCoord && (gOpenGLDisableFC == false);
+}
+
+inline bool dglDoesSupportEdgeClamp()
+{
+   return gGLState.suppEdgeClamp;
+}
+
+inline bool dglDoesSupportTextureCompression()
+{
+   return gGLState.suppTextureCompression && (gOpenGLDisableTCompress == false);
+}
+
+inline bool dglDoesSupportS3TC()
+{
+   return gGLState.suppS3TC;
+}
+
+inline bool dglDoesSupportFXT1()
+{
+   return gGLState.suppFXT1;
+}
+
+inline bool dglDoesSupportTexEnvAdd()
+{
+   return gGLState.suppTexEnvAdd;
+}
+
+inline bool dglDoesSupportTexAnisotropy()
+{
+   return gGLState.suppTexAnisotropic;
+}
+
+inline bool dglDoesSupportVertexBuffer()
+{
+   return false;
+}
+
+inline GLfloat dglGetMaxAnisotropy()
+{
+   return gGLState.maxAnisotropy;
+}
+
+inline GLint dglGetMaxTextureUnits()
+{
+   if (dglDoesSupportARBMultitexture())
+      return gGLState.maxTextureUnits;
+   else
+      return 1; 
+}
+
+//------------------------------------------------------------------------------
+/// For radeon cards we can do fast FSAA mode switching.
+/// Sets Full Scene Anti-Aliasing (FSAA) samples ( 1x, 2x, 4x ) via aglSetInteger()
+//------------------------------------------------------------------------------
+#define ATI_FSAA_LEVEL ((unsigned long)510)  
+void dglSetFSAASamples(GLint aasamp);
 
 #endif // _PLATFORMGL_H_

@@ -312,7 +312,7 @@ bool dglCheckState(const S32 mvDepth, const S32 pDepth,
 extern signed int gFSAASamples;
 
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
 
 //Luma: Add some additional commands here so that it works in all cases
 extern GLfloat gVertexFloats[8];

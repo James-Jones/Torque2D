@@ -381,8 +381,10 @@ ConsoleFunction(screenShot, void, 3, 3, "(string file, string format)"
       return;
    }
     
+#ifndef TORQUE_GLES
    glReadBuffer(GL_FRONT);
-   
+#endif
+
    Point2I extent = Canvas->getExtent();
    U8 * pixels = new U8[extent.x * extent.y * 4];
    glReadPixels(0, 0, extent.x, extent.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
@@ -1527,8 +1529,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 {
    PROFILE_START(CanvasPreRender);
 
-#ifndef TORQUE_OS_IOS
-    
+#ifndef TORQUE_GLES
    if(mRenderFront)
       glDrawBuffer(GL_FRONT);
    else
@@ -1661,7 +1662,8 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
       //temp draw the mouse
       if (cursorON && mShowCursor && !mouseCursor)
       {
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+#elif defined(TORQUE_GLES)
          glColor4ub(255, 0, 0, 255);
          GLfloat vertices[] = {
               (GLfloat)(cursorPt.x),(GLfloat)(cursorPt.y),

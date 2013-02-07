@@ -1082,7 +1082,8 @@ void GuiPopUpMenuCtrlEx::onRender(Point2I offset, const RectI &updateRect)
       F32 top = (F32)(r.extent.y / 2 + r.point.y - 4);
       F32 bottom = (F32)(top + 8);
 
-#ifdef TORQUE_OS_IOS	   
+#ifdef TORQUE_GLESv2
+#elif defined(TORQUE_GLES)
 // PUAP -Mat untested
        glColor4ub(mProfile->mFontColor.red,mProfile->mFontColor.green,mProfile->mFontColor.blue, 255);
 	   GLfloat verts[] = {

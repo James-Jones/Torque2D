@@ -168,10 +168,18 @@ void TextureHandle::setClamp( const bool clamp )
     // Set texture state.
     glBindTexture(GL_TEXTURE_2D, object->mGLTextureName);
     GLenum glClamp;
+
+#ifdef TORQUE_GLES
+    if ( clamp )
+        glClamp = GL_CLAMP_TO_EDGE;
+    else
+        glClamp = GL_REPEAT;
+#else
     if ( clamp )
         glClamp = dglDoesSupportEdgeClamp() ? GL_CLAMP_TO_EDGE : GL_CLAMP;
     else
         glClamp = GL_REPEAT;
+#endif
 
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glClamp );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glClamp );

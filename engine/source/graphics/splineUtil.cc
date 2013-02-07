@@ -33,7 +33,7 @@ namespace SplineUtil{
 void drawSplineBeam( const Point3F& camPos, U32 numSegments,
                      F32 width, SplinePatch &spline, F32 uvOffset, F32 numTexRep )
 {
-
+#ifndef TORQUE_GLES
    Point3F beginPoint, endPoint;
    spline.calc( 0.0, beginPoint );
    spline.calc( 1.0, endPoint );
@@ -91,8 +91,7 @@ void drawSplineBeam( const Point3F& camPos, U32 numSegments,
    }
 
    glEnd();
-
-
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -101,6 +100,7 @@ void drawSplineBeam( const Point3F& camPos, U32 numSegments,
 //------------------------------------------------------------------------------
 void drawSplineBeam( SplineBeamInfo &sbi )
 {
+#ifndef TORQUE_GLES
    if( !sbi.camPos || !sbi.spline ) return;
 
    Point3F beginPoint, endPoint;
@@ -169,7 +169,7 @@ void drawSplineBeam( SplineBeamInfo &sbi )
    }
 
    glEnd();
-
+#endif
 }
 
 

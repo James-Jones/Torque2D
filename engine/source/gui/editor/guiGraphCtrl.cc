@@ -102,7 +102,10 @@ void GuiGraphCtrl::onRender(Point2I offset, const RectI &updateRect)
 		if (mPlots[k].mGraphData.size() == 0)
 			continue;
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+//TODO
+    }
+#elif defined(TORQUE_GLES)
 		// Bar graph
 		if(mPlots[k].mGraphType == Bar)
 		{
@@ -216,7 +219,7 @@ void GuiGraphCtrl::onRender(Point2I offset, const RectI &updateRect)
 			else
 				glDrawArrays(GL_LINE_STRIP, 0, 4);
 		}
-	}
+    }
 #else
 		// Bar graph
 		if(mPlots[k].mGraphType == Bar)

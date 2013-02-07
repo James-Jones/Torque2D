@@ -82,7 +82,8 @@ void dglDrawBitmapStretchSR(TextureObject* texture,
                        const U32   in_flip,
                        F32			 fSpin,
                        bool				bSilhouette)
-{	
+{
+#ifndef TORQUE_GLESv2
    AssertFatal(texture != NULL, "GSurface::drawBitmapStretchSR: NULL Handle");
    if(!dstRect.isValidRect())
       return;
@@ -172,7 +173,7 @@ void dglDrawBitmapStretchSR(TextureObject* texture,
              sg_bitmapModulation.blue,
              sg_bitmapModulation.alpha);
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
 
     GLfloat verts[] = {
         (GLfloat)scrPoints[0].x, (GLfloat)scrPoints[0].y,
@@ -220,6 +221,7 @@ void dglDrawBitmapStretchSR(TextureObject* texture,
 
    glDisable(GL_BLEND);
    glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 void dglDrawBitmap(TextureObject* texture, const Point2I& in_rAt, const U32 in_flip)
@@ -344,8 +346,20 @@ U32 dglDrawTextN(GFont*          font,
 }
 
 //-----------------------------------------------------------------------------
+#ifdef TORQUE_GLESv2
+U32 dglDrawTextN(GFont*          font,
+                 const Point2I&  ptDraw,
+                 const UTF16*    in_string,
+                 U32             n,
+                 const ColorI*   colorTable,
+                 const U32       maxColorIndex,
+                 F32             rot)
 
-#ifdef TORQUE_OS_IOS
+{
+    return ptDraw.x;
+}
+
+#elif defined(TORQUE_GLES)
 U32 dglDrawTextN(GFont*          font,
                  const Point2I&  ptDraw,
                  const UTF16*    in_string,
@@ -772,12 +786,13 @@ U32 dglDrawTextN(GFont*          font,
 
 void dglDrawLine(S32 x1, S32 y1, S32 x2, S32 y2, const ColorI &color)
 {
+#ifndef TORQUE_GLESv2
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    glDisable(GL_TEXTURE_2D);
 
    glColor4ub(color.red, color.green, color.blue, color.alpha);
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
     GLfloat verts[] = {
         (GLfloat)(x1 + 0.5f), (GLfloat)(y1 + 0.5f),
         (GLfloat)(x2 + 0.5f), (GLfloat)(y2 + 0.5f),
@@ -795,6 +810,7 @@ void dglDrawLine(S32 x1, S32 y1, S32 x2, S32 y2, const ColorI &color)
     //glVertex2f((F32)x2 + 0.5, (F32)y2 + 0.5);
     //glEnd();
 #endif
+#endif
 }
 
 void dglDrawLine(const Point2I &startPt, const Point2I &endPt, const ColorI &color)
@@ -804,6 +820,7 @@ void dglDrawLine(const Point2I &startPt, const Point2I &endPt, const ColorI &col
 
 void dglDrawRect(const Point2I &upperL, const Point2I &lowerR, const ColorI &color, const float &lineWidth)
 {
+#ifndef TORQUE_GLESv2
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    glDisable(GL_TEXTURE_2D);
@@ -811,7 +828,7 @@ void dglDrawRect(const Point2I &upperL, const Point2I &lowerR, const ColorI &col
    glLineWidth(lineWidth);
 
    glColor4ub(color.red, color.green, color.blue, color.alpha);
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
     GLfloat verts[] = {
         (GLfloat)(upperL.x), (GLfloat)(upperL.y),
         (GLfloat)(lowerR.x), (GLfloat)(upperL.y),
@@ -829,6 +846,7 @@ void dglDrawRect(const Point2I &upperL, const Point2I &lowerR, const ColorI &col
       glVertex2f((F32)upperL.x + 0.5f, (F32)lowerR.y + 0.5f);
    glEnd();
 #endif
+#endif
 }
 
 // the fill convention for lined rects is that they outline the rectangle border of the
@@ -845,12 +863,13 @@ void dglDrawRect(const RectI &rect, const ColorI &color, const float &lineWidth)
 
 void dglDrawRectFill(const Point2I &upperL, const Point2I &lowerR, const ColorI &color)
 {
+#ifndef TORQUE_GLESv2
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    glDisable(GL_TEXTURE_2D);
 
    glColor4ub(color.red, color.green, color.blue, color.alpha);
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
     GLfloat vertices[] = {
         (GLfloat)upperL.x, (GLfloat)upperL.y,
         (GLfloat)upperL.x, (GLfloat)lowerR.y,
@@ -864,6 +883,7 @@ void dglDrawRectFill(const Point2I &upperL, const Point2I &lowerR, const ColorI 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 #else
    glRecti((S32)upperL.x, (S32)upperL.y, (S32)lowerR.x, (S32)lowerR.y);
+#endif
 #endif
 }
 void dglDrawRectFill(const RectI &rect, const ColorI &color)
@@ -892,7 +912,9 @@ void dglDraw2DSquare( const Point2F &screenPoint, F32 width, F32 spinAngle )
       points[i] += offset;
    }
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+   //TODO
+#elif defined(TORQUE_GLES)
     GLfloat verts[] = {
         0.0, 0.0,
         1.0, 0.0,
@@ -957,7 +979,9 @@ void dglDrawBillboard( const Point3F &position, F32 width, F32 spinAngle )
    }
 
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+   //TODO
+#elif defined(TORQUE_GLES)
     GLfloat verts[] = {
         0.0, 1.0,
         0.0, 0.0,
@@ -1013,7 +1037,9 @@ void dglWireCube(const Point3F & extent, const Point3F & center)
 
    glDisable(GL_CULL_FACE);
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+   //TODO
+#elif defined(TORQUE_GLES)
 //PUAP -Mat untested
    for (S32 i = 0; i < 6; i++)
    {
@@ -1068,7 +1094,9 @@ void dglSolidCube(const Point3F & extent, const Point3F & center)
       { 3, 2, 6, 7 }, { 7, 6, 4, 5 }, { 3, 7, 5, 1 }
    };
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+   //TODO
+#elif defined(TORQUE_GLES)
 //PUAP -Mat untested
    for (S32 i = 0; i < 6; i++)
    {
@@ -1110,12 +1138,13 @@ void dglSolidCube(const Point3F & extent, const Point3F & center)
 
 void dglSetClipRect(const RectI &clipRect)
 {
+#ifndef TORQUE_GLESv2
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
 
    U32 screenHeight = Platform::getWindowSize().y;
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
    glOrthof(clipRect.point.x, clipRect.point.x + clipRect.extent.x,
            clipRect.extent.y, 0,
            0, 1);
@@ -1134,6 +1163,7 @@ void dglSetClipRect(const RectI &clipRect)
               clipRect.extent.x, clipRect.extent.y);
 
    sgCurrentClipRect = clipRect;
+#endif
 }
 
 const RectI& dglGetClipRect()
@@ -1143,7 +1173,9 @@ const RectI& dglGetClipRect()
 
 bool dglPointToScreen( Point3F &point3D, Point3F &screenPoint )
 {
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+   //TODO
+#elif defined(TORQUE_GLES)
    GLfloat       glMV[16];
    GLfloat       glPR[16];
    GLint          glVP[4];
@@ -1214,6 +1246,10 @@ bool dglIsInCanonicalState()
 {
    bool ret = true;
 
+#ifdef TORQUE_GLESv2
+   //TODO
+#else
+
    // Canonical state:
    //  BLEND disabled
    //  TEXTURE_2D disabled on both texture units.
@@ -1225,7 +1261,7 @@ bool dglIsInCanonicalState()
    ret &= glIsEnabled(GL_BLEND) == GL_FALSE;
    ret &= glIsEnabled(GL_CULL_FACE) == GL_FALSE;
    GLint temp;
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
 // PUAP -Mat removed unsupported textureARB and Fog stuff
    if (dglDoesSupportARBMultitexture() == true) {
       //glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -1291,13 +1327,16 @@ bool dglIsInCanonicalState()
    if (dglDoesSupportFogCoord())
       ret &= glIsEnabled(GL_FOG_COORDINATE_ARRAY_EXT) == GL_FALSE;
 #endif
+#endif
    return ret;
 }
 
 
 void dglSetCanonicalState()
 {
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLESv2
+   //TODO
+#elif defined(TORQUE_GLES)
 // PUAP -Mat removed unsupported textureARB and Fog stuff
    glDisable(GL_BLEND);
    glDisable(GL_CULL_FACE);
@@ -1355,14 +1394,16 @@ void dglGetTransformState(S32* mvDepth,
                           F32* t1Matrix,
                           S32* vp)
 {
+#ifndef TORQUE_GLESv2
    glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, (GLint*)mvDepth);
    glGetIntegerv(GL_PROJECTION_STACK_DEPTH, (GLint*)pDepth);
 
    glGetIntegerv(GL_TEXTURE_STACK_DEPTH, (GLint*)t0Depth);
    glGetFloatv(GL_TEXTURE_MATRIX, t0Matrix);
+
    if (dglDoesSupportARBMultitexture())
    {
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
 // PUAP -Mat removed unsupported textureARB stuff
       //glActiveTextureARB(GL_TEXTURE1_ARB);
       glGetIntegerv(GL_TEXTURE_STACK_DEPTH, (GLint*)t1Depth);
@@ -1381,6 +1422,7 @@ void dglGetTransformState(S32* mvDepth,
       for (U32 i = 0; i < 16; i++)
          t1Matrix[i] = 0;
    }
+#endif
 
    RectI v;
    dglGetViewport(&v);
@@ -1399,6 +1441,9 @@ bool dglCheckState(const S32 mvDepth, const S32 pDepth,
    GLint md, pd;
    RectI v;
 
+#ifdef TORQUE_GLESv2
+   return false;
+#else
    glGetIntegerv(GL_MODELVIEW_STACK_DEPTH,  &md);
    glGetIntegerv(GL_PROJECTION_STACK_DEPTH, &pd);
 
@@ -1408,7 +1453,7 @@ bool dglCheckState(const S32 mvDepth, const S32 pDepth,
    glGetFloatv(GL_TEXTURE_MATRIX, t0m);
    if (dglDoesSupportARBMultitexture())
    {
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
 // PUAP -Mat removed unsupported textureARB and Fog stuff
       //glActiveTextureARB(GL_TEXTURE1_ARB);
       glGetIntegerv(GL_TEXTURE_STACK_DEPTH, &t1d);
@@ -1440,6 +1485,7 @@ bool dglCheckState(const S32 mvDepth, const S32 pDepth,
             (v.point.y  == vp[1]) &&
             (v.extent.x == vp[2]) &&
             (v.extent.y == vp[3])));
+#endif
 }
 
 
@@ -1633,7 +1679,7 @@ ConsoleFunction(png2jpg, S32, 2, 3, "( pngFilename [ , quality ] ) Use the png2j
    return(0);
 }
 
-#ifdef TORQUE_OS_IOS
+#ifdef TORQUE_GLES
 GLfloat gVertexFloats[8];
 GLfloat gTextureVerts[8];
 #endif
