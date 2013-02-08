@@ -1164,6 +1164,15 @@
     <ClCompile Include="..\..\source\platformNaCL\naclWindow.cc">
       <Filter>platformNaCL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCL\naclProcessControl.cc">
+      <Filter>platformNaCL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCL\naclStrings.cc">
+      <Filter>platformNaCL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCL\naclMemory.cc">
+      <Filter>platformNaCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\audio\audio.h">
@@ -2428,6 +2437,9 @@
       <Filter>persistence\taml</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\platformNaCL\platformGL.h">
+      <Filter>platformNaCL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\platformNaCL\platformNaCL.h">
       <Filter>platformNaCL</Filter>
     </ClInclude>
   </ItemGroup>

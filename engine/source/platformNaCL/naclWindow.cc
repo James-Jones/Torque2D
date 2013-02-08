@@ -1,5 +1,7 @@
-#include "platform/platform.h"
+#include "platformNaCL/platformNaCL.h"
 #include "console/console.h"
+
+NaCLPlatState naclState;
 
 void Platform::init()
 {
