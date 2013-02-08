@@ -15,6 +15,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_input_event.h"
+#include "ppapi/c/ppp_graphics_3d.h"
 
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_instance.h"
@@ -24,9 +25,8 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppb_websocket.h"
-
+#include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_graphics_3d.h"
-#include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_loader.h"
 
@@ -56,6 +56,7 @@ struct NaClPlatState
     PPB_URLRequestInfo* psURLRequest;
     PPB_URLLoader* psURLLoader;
     PPB_WebSocket* psWebSocket;
+    PPB_Gamepad* psGamepad;
 
     U32 currentTime;
 

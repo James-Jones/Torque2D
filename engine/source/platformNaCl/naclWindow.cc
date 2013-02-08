@@ -34,6 +34,49 @@ bool Platform::openWebBrowser( const char* webAddress )
     return false;
 }
 
+void Platform::restartInstance()
+{
+}
+
+void Platform::AlertOK(const char *windowTitle, const char *message)
+{
+}
+
+bool Platform::AlertOKCancel(const char *windowTitle, const char *message)
+{
+    return false;
+}
+
+bool Platform::AlertRetry(const char *windowTitle, const char *message)
+{
+    return false;
+}
+
+bool Platform::AlertYesNo(const char *windowTitle, const char *message)
+{
+    return false;
+}
+
+void Platform::enableKeyboardTranslation(void)
+{
+}
+
+void Platform::disableKeyboardTranslation(void)
+{
+}
+
+void Platform::setMouseLock(bool locked)
+{
+}
+
+void Platform::minimizeWindow()
+{
+}
+
+void Platform::restoreWindow()
+{
+}
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
@@ -96,6 +139,8 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
     naclState.psURLLoader = (PPB_URLLoader*) get_browser(PPB_URLLOADER_INTERFACE);
 
     naclState.psWebSocket = (PPB_WebSocket*) get_browser(PPB_WEBSOCKET_INTERFACE);
+
+    naclState.psGamepad = (PPB_Gamepad*) get_browser(PPB_GAMEPAD_INTERFACE);
 
     return PP_OK;
 }
