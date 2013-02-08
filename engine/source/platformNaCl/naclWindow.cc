@@ -1,5 +1,6 @@
 #include "platformNaCl/platformNaCl.h"
 #include "console/console.h"
+#include "game/gameInterface.h"
 
 NaClPlatState naclState;
 
@@ -76,32 +77,6 @@ void Platform::minimizeWindow()
 void Platform::restoreWindow()
 {
 }
-
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_var.h"
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_graphics_3d.h"
-
-#include "ppapi/c/ppp.h"
-#include "ppapi/c/ppp_instance.h"
-#include "ppapi/c/ppp_messaging.h"
-#include "ppapi/c/ppp_input_event.h"
-
-#include "ppapi/c/ppb.h"
-#include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppb_messaging.h"
-#include "ppapi/c/ppb_var.h"
-#include "ppapi/c/ppb_input_event.h"
-#include "ppapi/c/ppb_core.h"
-#include "ppapi/c/ppb_view.h"
-
-#include "ppapi/c/ppb_graphics_3d.h"
-#include "ppapi/c/ppp_graphics_3d.h"
-#include "ppapi/c/ppb_url_request_info.h"
-#include "ppapi/c/ppb_url_loader.h"
-
-#include "game/gameInterface.h"
 
 NaClPlatState::NaClPlatState() : currentTime(0)
 {
@@ -183,6 +158,9 @@ static void Instance_DidChangeView(PP_Instance instance,
             const char* argv[] = {"Torque2D"};
             Game->mainInitialize(1, argv);
         }
+
+        bool fullScreen = Con::getBoolVariable( "$pref::Video::fullScreen" );
+        naclState.psFullscreen->SetFullscreen(naclState.hModule, fullScreen ? PP_TRUE : PP_FALSE);
 
         PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClLoop, 0);
         naclState.psCore->CallOnMainThread(0, cc, PP_OK);
@@ -329,6 +307,8 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
     naclState.psWebSocket = (PPB_WebSocket*) get_browser(PPB_WEBSOCKET_INTERFACE);
 
     naclState.psGamepad = (PPB_Gamepad*) get_browser(PPB_GAMEPAD_INTERFACE);
+
+    naclState.psFullscreen = (PPB_Fullscreen*) get_browser(PPB_FULLSCREEN_INTERFACE);
 
     return PP_OK;
 }

@@ -29,6 +29,7 @@
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/c/ppb_fullscreen.h"
 
 #include "ppapi/gles2/gl2ext_ppapi.h"
 
@@ -57,6 +58,7 @@ struct NaClPlatState
     PPB_URLLoader* psURLLoader;
     PPB_WebSocket* psWebSocket;
     PPB_Gamepad* psGamepad;
+    PPB_Fullscreen* psFullscreen;
 
     U32 currentTime;
 
