@@ -32,7 +32,7 @@
 
 #include "ppapi/gles2/gl2ext_ppapi.h"
 
-struct NaCLPlatState
+struct NaClPlatState
 {
     S32 i32PluginWidth;
     S32 i32PluginHeight;
@@ -59,9 +59,9 @@ struct NaCLPlatState
 
     U32 currentTime;
 
-    NaCLPlatState();
+    NaClPlatState();
 };
 
-extern NaCLPlatState naclState;
+extern NaClPlatState naclState;
 
 #endif

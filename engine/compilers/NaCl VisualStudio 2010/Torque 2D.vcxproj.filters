@@ -154,8 +154,8 @@
     <Filter Include="testing\tests">
       <UniqueIdentifier>{57e1271d-4358-4180-b168-4b9c2cbac907}</UniqueIdentifier>
     </Filter>
-    <Filter Include="platformNaCL">
-      <UniqueIdentifier>{eacdc2b8-fcf4-4853-881b-6b788fff7765}</UniqueIdentifier>
+    <Filter Include="platformNaCl">
+      <UniqueIdentifier>{28732e65-eac3-4b7d-b030-f8c1046523b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1161,23 +1161,23 @@
     <ClCompile Include="..\..\source\persistence\taml\tamlCustom.cc">
       <Filter>persistence\taml</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\platformNaCL\naclWindow.cc">
-      <Filter>platformNaCL</Filter>
+    <ClCompile Include="..\..\source\platformNaCl\naclProcessControl.cc">
+      <Filter>platformNaCl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\platformNaCL\naclProcessControl.cc">
-      <Filter>platformNaCL</Filter>
+    <ClCompile Include="..\..\source\platformNaCl\naclStrings.cc">
+      <Filter>platformNaCl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\platformNaCL\naclStrings.cc">
-      <Filter>platformNaCL</Filter>
+    <ClCompile Include="..\..\source\platformNaCl\naclTime.cc">
+      <Filter>platformNaCl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\platformNaCL\naclMemory.cc">
-      <Filter>platformNaCL</Filter>
+    <ClCompile Include="..\..\source\platformNaCl\naclWindow.cc">
+      <Filter>platformNaCl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\platformNaCL\naclNet.cc">
-      <Filter>platformNaCL</Filter>
+    <ClCompile Include="..\..\source\platformNaCl\naclMemory.cc">
+      <Filter>platformNaCl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\platformNaCL\naclTime.cc">
-      <Filter>platformNaCL</Filter>
+    <ClCompile Include="..\..\source\platformNaCl\naclNet.cc">
+      <Filter>platformNaCl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2442,11 +2442,11 @@
     <ClInclude Include="..\..\source\persistence\taml\tamlCustom.h">
       <Filter>persistence\taml</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source\platformNaCL\platformGL.h">
-      <Filter>platformNaCL</Filter>
+    <ClInclude Include="..\..\source\platformNaCl\platformGL.h">
+      <Filter>platformNaCl</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source\platformNaCL\platformNaCL.h">
-      <Filter>platformNaCL</Filter>
+    <ClInclude Include="..\..\source\platformNaCl\platformNaCl.h">
+      <Filter>platformNaCl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

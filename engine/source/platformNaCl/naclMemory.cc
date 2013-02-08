@@ -22,7 +22,7 @@
 
 
 
-#include "platformNaCL/platformNaCL.h"
+#include "platformNaCl/platformNaCl.h"
 #include <stdlib.h>
 
 void* dMemcpy(void *dst, const void *src, unsigned size)

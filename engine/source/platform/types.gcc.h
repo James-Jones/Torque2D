@@ -102,7 +102,7 @@ typedef unsigned long long  U64;
 #endif
 #  include "platform/types.ppc.h"
 #elif defined(__native_client__)
-#  define TORQUE_OS_STRING "NaCL"
+#  define TORQUE_OS_STRING "NaCl"
 #  define TORQUE_OS_NACL
 #  define TORQUE_GLESv2
 #  include "platform/types.posix.h"

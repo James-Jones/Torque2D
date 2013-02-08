@@ -22,7 +22,7 @@
 
 
 
-#include "platformNaCL/platformNaCL.h"
+#include "platformNaCl/platformNaCl.h"
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdlib.h>

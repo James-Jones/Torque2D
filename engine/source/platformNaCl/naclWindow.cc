@@ -1,7 +1,7 @@
-#include "platformNaCL/platformNaCL.h"
+#include "platformNaCl/platformNaCl.h"
 #include "console/console.h"
 
-NaCLPlatState naclState;
+NaClPlatState naclState;
 
 void Platform::init()
 {
@@ -58,7 +58,7 @@ bool Platform::openWebBrowser( const char* webAddress )
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_loader.h"
 
-NaCLPlatState::NaCLPlatState() : currentTime(0)
+NaClPlatState::NaClPlatState() : currentTime(0)
 {
 }
 

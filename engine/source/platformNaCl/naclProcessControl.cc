@@ -20,7 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "platformNaCL/platformNaCL.h"
+#include "platformNaCl/platformNaCl.h"
 #include <ppapi\cpp\logging.h>
 #include<cstring>
 

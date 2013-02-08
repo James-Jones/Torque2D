@@ -20,7 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "platformNaCL/platformNaCL.h"
+#include "platformNaCl/platformNaCl.h"
 #include "platform/event.h"
 #include "console/console.h"
 #include "game/gameInterface.h"

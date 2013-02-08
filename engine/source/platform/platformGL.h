@@ -31,6 +31,6 @@
 #elif defined(TORQUE_OS_IOS)
 #include "platformiOS/platformGL.h"
 #elif defined(TORQUE_OS_NACL)
-#include "platformNaCL/platformGL.h"
+#include "platformNaCl/platformGL.h"
 #endif
 #endif
