@@ -310,6 +310,8 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
 
     naclState.psFullscreen = (PPB_Fullscreen*) get_browser(PPB_FULLSCREEN_INTERFACE);
 
+    naclState.psMouseLock = (PPB_MouseLock*) get_browser(PPB_MOUSELOCK_INTERFACE);
+
     return PP_OK;
 }
 PP_EXPORT void PPP_ShutdownModule()

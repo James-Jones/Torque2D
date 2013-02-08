@@ -252,11 +252,24 @@ void Input::setCursorPos(S32 x, S32 y)
 
 }
 
+static void NaClMouseLocked(void* user_data, int32_t result)
+{
+}
+
 //------------------------------------------------------------------------------
 // Set the cursor to draw (true) or not (false)
 void Input::setCursorState(bool on)
 {
-
+    if(on)
+    {
+        naclState.psMouseLock->UnlockMouse(naclState.hModule);
+    }
+    else
+    {
+        //Only works if the tab is in fullscreen mode
+        PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClMouseLocked, 0);
+        naclState.psMouseLock->LockMouse(naclState.hModule, cc);
+    }
 }
 
 //------------------------------------------------------------------------------

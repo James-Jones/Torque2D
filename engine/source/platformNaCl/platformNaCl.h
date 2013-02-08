@@ -30,6 +30,7 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_fullscreen.h"
+#include "ppapi/c/ppb_mouse_lock.h"
 
 #include "ppapi/gles2/gl2ext_ppapi.h"
 
@@ -59,6 +60,7 @@ struct NaClPlatState
     PPB_WebSocket* psWebSocket;
     PPB_Gamepad* psGamepad;
     PPB_Fullscreen* psFullscreen;
+    PPB_MouseLock* psMouseLock;
 
     U32 currentTime;
 
