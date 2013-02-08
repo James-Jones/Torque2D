@@ -708,6 +708,7 @@
     <ClCompile Include="..\..\source\math\mSplinePatch.cc" />
     <ClCompile Include="..\..\source\persistence\SimXMLDocument.cpp" />
     <ClCompile Include="..\..\source\platformNaCL\naclMemory.cc" />
+    <ClCompile Include="..\..\source\platformNaCL\naclNet.cc" />
     <ClCompile Include="..\..\source\platformNaCL\naclProcessControl.cc" />
     <ClCompile Include="..\..\source\platformNaCL\naclStrings.cc" />
     <ClCompile Include="..\..\source\platformNaCL\naclWindow.cc" />

@@ -23,6 +23,7 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_view.h"
+#include "ppapi/c/ppb_websocket.h"
 
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -39,6 +40,7 @@ struct NaCLPlatState
     //Handles
     PP_Resource hRenderContext;
     PP_Instance hModule;
+    PP_Resource hNetworkConnetion;
 
     //Interfaces to pepper systems.
     PPB_Messaging* psMessagingInterface;
@@ -53,6 +55,7 @@ struct NaCLPlatState
     PPB_KeyboardInputEvent* psKeyboard;
     PPB_URLRequestInfo* psURLRequest;
     PPB_URLLoader* psURLLoader;
+    PPB_WebSocket* psWebSocket;
 };
 
 extern NaCLPlatState naclState;
