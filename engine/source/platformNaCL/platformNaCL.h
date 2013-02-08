@@ -56,6 +56,10 @@ struct NaCLPlatState
     PPB_URLRequestInfo* psURLRequest;
     PPB_URLLoader* psURLLoader;
     PPB_WebSocket* psWebSocket;
+
+    U32 currentTime;
+
+    NaCLPlatState();
 };
 
 extern NaCLPlatState naclState;

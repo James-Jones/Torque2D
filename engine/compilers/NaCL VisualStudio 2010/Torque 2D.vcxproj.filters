@@ -1176,6 +1176,9 @@
     <ClCompile Include="..\..\source\platformNaCL\naclNet.cc">
       <Filter>platformNaCL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCL\naclTime.cc">
+      <Filter>platformNaCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\audio\audio.h">

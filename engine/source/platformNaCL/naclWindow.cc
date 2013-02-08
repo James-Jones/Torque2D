@@ -58,6 +58,10 @@ bool Platform::openWebBrowser( const char* webAddress )
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_loader.h"
 
+NaCLPlatState::NaCLPlatState() : currentTime(0)
+{
+}
+
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
                                        PPB_GetInterface get_browser)
 {
