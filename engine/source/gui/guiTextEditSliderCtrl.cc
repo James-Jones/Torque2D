@@ -226,7 +226,8 @@ void GuiTextEditSliderCtrl::onRender(Point2I offset, const RectI &updateRect)
                Point2I(start.x+14,midPoint.y),
                mProfile->mFontColor);
 
-#ifdef TORQUE_GLES
+#ifdef TORQUE_GLESv2
+#elif defined(TORQUE_GLES)
 
    glColor4f(0,0,0,255);
 	

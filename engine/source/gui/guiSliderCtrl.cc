@@ -240,6 +240,7 @@ void GuiSliderCtrl::updateThumb(F32 _value, bool snap, bool onWake)
 //----------------------------------------------------------------------------
 void GuiSliderCtrl::onRender(Point2I offset, const RectI &updateRect)
 {
+#ifndef TORQUE_GLESv2
     Point2I pos(offset.x + mShiftPoint, offset.y);
     Point2I ext(mBounds.extent.x - mShiftExtent, mBounds.extent.y);
     RectI thumb = mThumb;
@@ -464,5 +465,6 @@ void GuiSliderCtrl::onRender(Point2I offset, const RectI &updateRect)
         dglDrawText(mProfile->mFont, textStart, buf, mProfile->mFontColors);
     }
     renderChildControls(offset, updateRect);
+#endif
 }
 

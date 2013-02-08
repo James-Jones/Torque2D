@@ -180,7 +180,7 @@
       <BrowseInformation>false</BrowseInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <CompileAs>CompileAsCpp</CompileAs>
+      <CompileAs>Default</CompileAs>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <DisableSpecificWarnings>4800;4100;4127;4512</DisableSpecificWarnings>
@@ -191,7 +191,7 @@
       <AdditionalIncludeDirectories>../../Lib/MSPlatformSDK/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <OutputFile>../../../Torque2D_DEBUG.exe</OutputFile>
+      <OutputFile>../../../Torque2D_DEBUG$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
@@ -439,9 +439,6 @@
       </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Torque 2D.rc" />
-  </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\2d\assets\AnimationAsset.cc" />
     <ClCompile Include="..\..\source\2d\assets\AnimationController.cc" />
@@ -1202,64 +1199,6 @@
     <ClInclude Include="..\..\source\gui\editor\guiSeparatorCtrl.h" />
     <ClInclude Include="..\..\source\testing\unitTesting.h" />
     <ClInclude Include="..\..\source\torqueConfig.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\..\source\math\mMath_ASM.asm">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\..\source\math\mMathAMD_ASM.asm">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\..\source\math\mMathSSE_ASM.asm">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\..\source\platform\platformCPUInfo.asm">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl32'">"$(SolutionDir)..\..\Bin\nasm\nasmw.exe" -f win32 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
-    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="ljpeg.vcxproj">
