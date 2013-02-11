@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lpng", "lpng.vcxproj", "{AF
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib.vcxproj", "{86CB2525-0CF3-40D3-BF42-A0A95035EE8C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openal", "openal\openal.vcxproj", "{FCC625F8-6CF3-4653-8C84-6F6085C898D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|NaCl32 = Debug|NaCl32
@@ -66,6 +68,16 @@ Global
 		{86CB2525-0CF3-40D3-BF42-A0A95035EE8C}.Shipping|NaCl32.Build.0 = Shipping|NaCl32
 		{86CB2525-0CF3-40D3-BF42-A0A95035EE8C}.Shipping|Win32.ActiveCfg = Shipping|Win32
 		{86CB2525-0CF3-40D3-BF42-A0A95035EE8C}.Shipping|Win32.Build.0 = Shipping|Win32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Debug|NaCl32.ActiveCfg = Debug|NaCl32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Debug|NaCl32.Build.0 = Debug|NaCl32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Debug|Win32.Build.0 = Debug|Win32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Release|NaCl32.ActiveCfg = Release|Win32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Release|Win32.ActiveCfg = Release|Win32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Release|Win32.Build.0 = Release|Win32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Shipping|NaCl32.ActiveCfg = Release|Win32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Shipping|Win32.ActiveCfg = Release|Win32
+		{FCC625F8-6CF3-4653-8C84-6F6085C898D5}.Shipping|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

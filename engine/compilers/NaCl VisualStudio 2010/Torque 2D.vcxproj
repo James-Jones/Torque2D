@@ -1217,6 +1217,9 @@
       <Project>{af1179e3-a838-46a3-a427-1e62aa4c52f4}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="openal\openal.vcxproj">
+      <Project>{fcc625f8-6cf3-4653-8c84-6f6085c898d5}</Project>
+    </ProjectReference>
     <ProjectReference Include="zlib.vcxproj">
       <Project>{86cb2525-0cf3-40d3-bf42-a0a95035ee8c}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
