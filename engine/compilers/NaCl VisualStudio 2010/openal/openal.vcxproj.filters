@@ -99,6 +99,9 @@
     <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\OpenAL32\alThunk.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\backends\loopback.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\hrtf_tables.inc">

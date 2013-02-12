@@ -1185,6 +1185,15 @@
     <ClCompile Include="..\..\source\platformNaCl\naclFileio.cc">
       <Filter>platformNaCl</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\naclMath.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\threads\mutex.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\threads\thread.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\audio\audio.h">

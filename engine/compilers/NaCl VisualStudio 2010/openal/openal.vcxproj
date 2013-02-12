@@ -118,6 +118,7 @@
     <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\alcRing.c" />
     <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\alcThread.c" />
     <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\ALu.c" />
+    <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\backends\loopback.c" />
     <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\backends\null.c" />
     <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\backends\ppapi.c" />
     <ClCompile Include="..\..\..\lib\openal\NaCl\openal-soft-1.15.1\Alc\bs2b.c" />

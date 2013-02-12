@@ -416,7 +416,5 @@ void alc_ppapi_deinit(void)
 void alc_ppapi_probe(enum DevProbe type)
 {
     if (type == ALL_DEVICE_PROBE)
-        AppendDeviceList(ppapiDevice);
-    //else if (type == ALL_DEVICE_PROBE)
-    //    AppendAllDeviceList(ppapiDevice);
+        AppendAllDevicesList(ppapiDevice);
 }

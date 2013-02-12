@@ -191,7 +191,13 @@ S32 dStrcmp(const char *str1, const char *str2)
 {
    return strcmp(str1, str2);   
 }  
- 
+
+int dStrcmp(const UTF16 *str1, const UTF16 *str2)
+{
+    AssertFatal(false, "Wide strings on native client not handled");
+    return 0;
+}
+
 S32 dStricmp(const char *str1, const char *str2)
 {
    return strcasecmp(str1, str2);   
@@ -345,6 +351,34 @@ S32 dVsprintf(char *buffer, U32 bufferSize, const char *format, void *arglist)
     return 0;
 }
 
+int dStrrev(char* str)
+{
+    int l=dStrlen(str)-1; //get the string length
+    for(int x=0;x < l;x++,l--)
+    {
+        str[x]^=str[l];  //triple XOR Trick
+        str[l]^=str[x];  //for not using a temp
+        str[x]^=str[l];
+    }
+    return l;
+}
+
+int dItoa(int n, char s[])
+{
+    int i, sign;
+    
+    if ((sign = n) < 0)  /* record sign */
+        n = -n;          /* make n positive */
+    i = 0;
+    do {       /* generate digits in reverse order */
+        s[i++] = n % 10 + '0';   /* get next digit */
+    } while ((n /= 10) > 0);     /* delete it */
+    if (sign < 0)
+        s[i++] = '-';
+    s[i] = '\0';
+    dStrrev(s);
+    return dStrlen(s);
+}
 
 S32 dSscanf(const char *buffer, const char *format, ...)
 {
