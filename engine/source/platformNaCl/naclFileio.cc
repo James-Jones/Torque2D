@@ -253,6 +253,9 @@ bool Platform::createPath(const char *file)
     return false;
 }
 
+void Platform::openFolder(const char* path )
+{
+}
 
 //--------------------------------------
 bool Platform::dumpPath(const char *path, Vector<Platform::FileInfo> &fileVector, S32 recurseDepth)

@@ -20,6 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#ifndef TORQUE_OS_NACL//Turn off for NaCl at the moment
+
 // We don't want tests in a shipping version.
 #ifndef TORQUE_SHIPPING
 
@@ -119,3 +121,5 @@ ConsoleFunction( runAllUnitTests, S32, 1, 1, "() - Runs all the registered unit 
 }
 
 #endif // TORQUE_SHIPPING
+
+#endif

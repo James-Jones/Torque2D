@@ -61,6 +61,11 @@ Net::Error Net::sendtoSocket(NetSocket socket, const U8 *buffer, int bufferSize)
 {
 }
 
+bool Net::openPort(S32 port)
+{
+    return false;
+}
+
 void Net::closePort()
 {
 }

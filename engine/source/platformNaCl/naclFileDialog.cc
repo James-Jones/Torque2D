@@ -29,7 +29,6 @@
 #include "console/consoleTypes.h"
 #include "debug/profiler.h"
 #include "io/resource/resourceManager.h"
-#include <ShlObj.h>
 
 //
 // Execute Method

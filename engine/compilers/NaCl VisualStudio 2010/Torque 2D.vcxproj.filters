@@ -1203,6 +1203,15 @@
     <ClCompile Include="..\..\source\platformNaCl\popupMenuNaCl.cc">
       <Filter>platformNaCl</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\naclFont.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\naclAudio.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\naclFileDialog.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\audio\audio.h">

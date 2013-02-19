@@ -202,7 +202,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>ppapi_cpp;ppapi;ppapi_gles2;</AdditionalDependencies>
+      <AdditionalDependencies>ppapi_cpp;ppapi;ppapi_gles2;nosys;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -708,8 +708,11 @@
     <ClCompile Include="..\..\source\math\mSplinePatch.cc" />
     <ClCompile Include="..\..\source\persistence\SimXMLDocument.cpp" />
     <ClCompile Include="..\..\source\platformNaCl\mutex.cc" />
+    <ClCompile Include="..\..\source\platformNaCl\naclAudio.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclCPUInfo.cc" />
+    <ClCompile Include="..\..\source\platformNaCl\naclFileDialog.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclFileio.cc" />
+    <ClCompile Include="..\..\source\platformNaCl\naclFont.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclInput.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclMath.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclMemory.cc" />

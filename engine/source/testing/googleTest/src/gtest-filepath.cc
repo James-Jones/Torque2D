@@ -105,6 +105,8 @@ FilePath FilePath::GetCurrentDir() {
 #elif GTEST_OS_WINDOWS
   char cwd[GTEST_PATH_MAX_ + 1] = { '\0' };
   return FilePath(_getcwd(cwd, sizeof(cwd)) == NULL ? "" : cwd);
+#elif GTEST_OS_NACL
+    return FilePath("");
 #else
   char cwd[GTEST_PATH_MAX_ + 1] = { '\0' };
   return FilePath(getcwd(cwd, sizeof(cwd)) == NULL ? "" : cwd);
@@ -323,6 +325,8 @@ bool FilePath::CreateFolder() const {
   delete [] unicode;
 #elif GTEST_OS_WINDOWS
   int result = _mkdir(pathname_.c_str());
+#elif GTEST_OS_NACL
+  int result = 1;
 #else
   int result = mkdir(pathname_.c_str(), 0777);
 #endif  // GTEST_OS_WINDOWS_MOBILE

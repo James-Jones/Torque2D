@@ -23,6 +23,7 @@
 
 
 #include "platformNaCl/platformNaCl.h"
+#include "string/stringTable.h"
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -399,4 +400,9 @@ void dQsort(void *base, U32 nelem, U32 width, S32 (QSORT_CALLBACK *fcmp)(const v
 {
    qsort(base, nelem, width, fcmp);
 }   
+
+StringTableEntry Platform::createUUID( void )
+{
+    return StringTable->insert("68753A44-4D6F-1226-9C60-0050E4C00067");
+}
 

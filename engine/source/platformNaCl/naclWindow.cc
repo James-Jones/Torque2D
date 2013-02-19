@@ -1,4 +1,5 @@
 #include "platformNaCl/platformNaCl.h"
+#include "platform/platformVideo.h"
 #include "console/console.h"
 #include "game/gameInterface.h"
 #include "math/mPoint.h"
@@ -90,6 +91,22 @@ const Point2I &Platform::getWindowSize()
 void Platform::setWindowSize( U32 newWidth, U32 newHeight )
 {
    windowSize.set( newWidth, newHeight );
+}
+
+Resolution Video::getDesktopResolution()
+{
+   Resolution  Result;
+   PP_Size size;
+
+   naclState.psFullscreen->GetScreenSize(naclState.hModule, &size);
+
+   // Retrieve Resolution Information.
+   Result.bpp  = 32;
+   Result.w    = size.width;
+   Result.h    = size.height;
+
+   // Return Result;
+   return Result;
 }
 
 void Platform::process()

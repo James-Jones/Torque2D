@@ -138,8 +138,13 @@ static ALuint PpapiProc(ALvoid *ptr)
      * callback.  We want to keep twice this amount in the buffer at any given
      * time.
      */
-    const ALuint MinBufferSizeInBytes = max(SampleFrameInBytes*2,
-                                            UpdateSizeInBytes);
+
+    ALuint MinBufferSizeInBytes;
+
+    if((SampleFrameInBytes*2) > UpdateSizeInBytes)
+        MinBufferSizeInBytes = SampleFrameInBytes*2;
+    else
+        MinBufferSizeInBytes = UpdateSizeInBytes;
 
     while(!data->killNow && Device->Connected)
     {
@@ -336,7 +341,10 @@ static ALCboolean ppapi_reset_playback(ALCdevice *device)
     ALuint UpdateSizeInBytes = device->UpdateSize * kFrameSizeInBytes;
     ALuint SampleFrameInBytes = data->sample_frame_count * kFrameSizeInBytes;
     /* kBufferPadMult is added to protect against buffer underruns. */
-    data->size = max(UpdateSizeInBytes, SampleFrameInBytes) * kBufferPadMult;
+    if(UpdateSizeInBytes > SampleFrameInBytes)
+        data->size = UpdateSizeInBytes * kBufferPadMult;
+    else
+        data->size = SampleFrameInBytes * kBufferPadMult;
 
     /* Extra UpdateSize added so we can read off the end of the buffer in one
      * shot from aluMixData, but treat the buffer like it's of size data->size.
