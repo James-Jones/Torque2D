@@ -1188,10 +1188,19 @@
     <ClCompile Include="..\..\source\platformNaCl\naclMath.cc">
       <Filter>platformNaCl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\platformNaCl\threads\mutex.cc">
+    <ClCompile Include="..\..\source\platformNaCl\naclSemaphore.cc">
       <Filter>platformNaCl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\platformNaCl\threads\thread.cc">
+    <ClCompile Include="..\..\source\platformNaCl\naclCPUInfo.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\thread.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\mutex.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\popupMenuNaCl.cc">
       <Filter>platformNaCl</Filter>
     </ClCompile>
   </ItemGroup>

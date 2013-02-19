@@ -59,7 +59,10 @@ extern ALvoid  alcMacOSXMixerOutputRateProc(const ALdouble value);
 #ifdef TORQUE_OS_OSX
 static ALCdevice *mDevice   = NULL;             // active OpenAL device
 static ALCcontext *mContext = NULL;             // active OpenAL context
-#elif TORQUE_OS_IOS
+#elif defined(TORQUE_OS_IOS)
+static ALCdevice *mDevice   = NULL;             // active OpenAL device
+static ALCcontext *mContext = NULL;             // active OpenAL context
+#elif defined(TORQUE_OS_NACL)
 static ALCdevice *mDevice   = NULL;             // active OpenAL device
 static ALCcontext *mContext = NULL;             // active OpenAL context
 #else
@@ -2437,6 +2440,8 @@ bool OpenALInit()
    mDevice = (ALCvoid *)alcOpenDevice(deviceSpecifier);
 
 #elif defined(TORQUE_OS_OSX)
+   mDevice = alcOpenDevice(NULL);
+#elif defined(TORQUE_OS_NACL)
    mDevice = alcOpenDevice(NULL);
 #else
    mDevice = (ALCvoid *)alcOpenDevice(NULL);

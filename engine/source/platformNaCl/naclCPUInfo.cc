@@ -20,60 +20,34 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _PLATFORMAL_H_
-#define _PLATFORMAL_H_
-
-#ifndef _PLATFORM_H_
 #include "platform/platform.h"
-#endif
+#include "platformNaCl/platformNaCl.h"
+#include "console/console.h"
+#include "string/stringTable.h"
+#include <math.h>
 
-#if defined(TORQUE_OS_OSX)
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-#include "platform/eaxtypes.h"
-#elif defined(TORQUE_OS_IOS)
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-#elif defined(TORQUE_OS_NACL)
-#include <AL/al.h>
-#include <AL/alc.h>
-#else
-// declare externs of the AL fns here.
-#include "al/altypes.h"
-#include "al/alctypes.h"
-#include "al/eaxtypes.h"
-#define AL_FUNCTION(fn_return,fn_name,fn_args, fn_value) extern fn_return (FN_CDECL *fn_name)fn_args;
-#include "al/al_func.h"
-#include "al/alc_func.h"
-#include "al/eax_func.h"
-#undef AL_FUNCTION
-#endif
+extern void PlatformBlitInit();
+extern void SetProcessorInfo(TorqueSystemInfo::Processor& pInfo,
+   char* vendor, U32 processor, U32 properties); // platform/platformCPU.cc
 
-#if defined(TORQUE_OS_IOS)
 
-#define AssertNoOALError(inMessage)				\
-	result = alGetError();							\
-	AssertFatal( result == AL_NO_ERROR, inMessage)	\
- 
-#endif
-
-namespace Audio
+void Processor::init()
 {
+   Con::printSeparator();
+   Con::printf("Processor Initialization:");
 
-bool OpenALInit();
-void OpenALShutdown();
+   PlatformSystemInfo.processor.type = CPU_X86Compatible;
+   PlatformSystemInfo.processor.name = StringTable->insert("Unknown x86 Compatible");
+   PlatformSystemInfo.processor.mhz  = 0;
+   PlatformSystemInfo.processor.properties = CPU_PROP_C;
 
-bool OpenALDLLInit();
-void OpenALDLLShutdown();
+   char     vendor[13] = {0,};
+   U32   properties = 0;
+   U32   processor  = 0;
 
-// special alx flags
-#define AL_GAIN_LINEAR                  0xFF01
+   SetProcessorInfo(PlatformSystemInfo.processor, vendor, processor, properties);
 
-// helpers
-F32 DBToLinear(F32 value);
-F32 linearToDB(F32 value);
-
-}  // end namespace Audio
-
-
-#endif  // _H_PLATFORMAL_
+    Con::printf("   %s, (Unknown) Mhz", PlatformSystemInfo.processor.name);
+    // stick SOMETHING in so it isn't ZERO.
+    PlatformSystemInfo.processor.mhz = 200; // seems a decent value.
+}

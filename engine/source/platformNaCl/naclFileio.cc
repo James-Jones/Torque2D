@@ -328,5 +328,17 @@ bool Platform::dumpDirectories( const char *path, Vector<StringTableEntry> &dire
 
 StringTableEntry Platform::osGetTemporaryDirectory()
 {
+    //TODO: PP_FILESYSTEMTYPE_LOCALTEMPORARY
    return StringTable->insert("");
 }
+
+const char *Platform::getUserDataDirectory() 
+{
+   return StringTable->insert("data/");
+}
+
+const char *Platform::getUserHomeDirectory() 
+{
+   return StringTable->insert("home/");
+}
+

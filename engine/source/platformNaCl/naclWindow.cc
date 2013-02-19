@@ -1,6 +1,8 @@
 #include "platformNaCl/platformNaCl.h"
 #include "console/console.h"
 #include "game/gameInterface.h"
+#include "math/mPoint.h"
+#include "al/alc.h"
 
 NaClPlatState naclState;
 
@@ -78,6 +80,30 @@ void Platform::restoreWindow()
 {
 }
 
+static Point2I windowSize;
+
+const Point2I &Platform::getWindowSize()
+{
+   return windowSize;
+}
+
+void Platform::setWindowSize( U32 newWidth, U32 newHeight )
+{
+   windowSize.set( newWidth, newHeight );
+}
+
+void Platform::process()
+{
+}
+
+void TimeManager::process()
+{
+}
+
+S32 Platform::messageBox(const UTF8 *title, const UTF8 *message, MBButtons buttons, MBIcons icon)
+{
+}
+
 NaClPlatState::NaClPlatState() : currentTime(0)
 {
 }
@@ -128,6 +154,8 @@ static void Instance_DidChangeView(PP_Instance instance,
 
 	naclState.i32PluginWidth = pos.size.width;
 	naclState.i32PluginHeight = pos.size.height;
+
+    Platform::setWindowSize( naclState.i32PluginWidth, naclState.i32PluginHeight );
 
     if(naclState.hRenderContext == 0)
     {
@@ -283,6 +311,8 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
     {
       return PP_ERROR_FAILED;
     }
+
+    alSetPpapiInfo(a_module_id, get_browser);
 
     naclState.psGL = (PPB_OpenGLES2*)get_browser(PPB_OPENGLES2_INTERFACE);
 
