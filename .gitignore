@@ -27,6 +27,12 @@ Torque2D_DEBUG.exe
 Torque2DGame.app
 Torque2DGame_Debug.app
 linkmap.txt
+Torque2D_32.nexe
+Torque2D_DEBUG_32.nexe
+Torque2D_64.nexe
+Torque2D_DEBUG_64.nexe
+engine/compilers/NaCl VisualStudio 2010/chrome_data
+engine/compilers/NaCl VisualStudio 2010/newlib
     
 # Compiled source #
 ###################
