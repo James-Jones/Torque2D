@@ -23,6 +23,11 @@
 // We don't want tests in a shipping version.
 #ifndef TORQUE_SHIPPING
 
+
+#include "platform\types.h"
+
+#ifndef TORQUE_OS_NACL//Turn off for NaCl at the moment
+
 #ifndef _UNIT_TESTING_H_
 #include "testing/unitTesting.h"
 #endif
@@ -123,5 +128,7 @@ TEST( PlatformFileIOTests, FileWriteRead )
 }
 
 //-----------------------------------------------------------------------------
+
+#endif
 
 #endif // TORQUE_SHIPPING

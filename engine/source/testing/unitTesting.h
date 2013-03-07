@@ -23,10 +23,15 @@
 #ifndef _UNIT_TESTING_H_
 #define _UNIT_TESTING_H_
 
+#include "platform\types.h"
+
+#ifndef TORQUE_OS_NACL
+
 #ifndef TORQUE_SHIPPING
 
 #include "gtest/gtest.h"
 
 #endif // TORQUE_SHIPPING
+#endif
 
 #endif // _UNIT_TESTING_H_

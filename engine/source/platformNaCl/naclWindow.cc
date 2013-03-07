@@ -1,4 +1,5 @@
 #include "platformNaCl/platformNaCl.h"
+#include "platformNaCl/platformGL.h"
 #include "platform/platformVideo.h"
 #include "console/console.h"
 #include "game/gameInterface.h"
@@ -125,13 +126,38 @@ NaClPlatState::NaClPlatState() : currentTime(0)
 {
 }
 
+/**
+ * Creates new string PP_Var from C string. The resulting object will be a
+ * refcounted string object. It will be AddRef()ed for the caller. When the
+ * caller is done with it, it should be Release()d.
+ * @param[in] str C string to be converted to PP_Var
+ * @return PP_Var containing string.
+ */
+static struct PP_Var CStrToVar(const char* str) {
+  if (naclState.psVarInterface != NULL) {
+	return naclState.psVarInterface->VarFromUtf8(str, strlen(str));
+  }
+  return PP_MakeUndefined();
+}
+
+static void SendString(const char* str)
+{
+	naclState.psMessagingInterface->PostMessage(naclState.hModule, CStrToVar(str));
+}
+
 void NaClLoop(void* user_data, int32_t result)
 {
     if(Game->isRunning())
     {
         glSetCurrentContextPPAPI(naclState.hRenderContext);
 
+#if 0
         Game->mainLoop();
+#else
+        //Simple test
+        naclState.psGL->ClearColor(naclState.hRenderContext, 1, 0, 1, 1);
+        naclState.psGL->Clear(naclState.hRenderContext, GL_COLOR_BUFFER_BIT);
+#endif
 
         glSetCurrentContextPPAPI(0);
 
@@ -160,7 +186,6 @@ static void Instance_DidDestroy(PP_Instance instance) {
 static void Instance_DidChangeView(PP_Instance instance,
                                    PP_Resource view_resource) {
 	struct PP_Rect pos;
-    int bFirstCall = 0;
 
 	naclState.psView->GetRect(view_resource, &pos);
 
@@ -174,10 +199,6 @@ static void Instance_DidChangeView(PP_Instance instance,
 
     Platform::setWindowSize( naclState.i32PluginWidth, naclState.i32PluginHeight );
 
-    if(naclState.hRenderContext == 0)
-    {
-        bFirstCall = 1;
-    }
 
     if(naclState.hRenderContext == 0)
     {
@@ -198,17 +219,21 @@ static void Instance_DidChangeView(PP_Instance instance,
 	    naclState.hRenderContext = naclState.psG3D->Create(naclState.hModule, NULL, attribs);
 	    naclState.psInstanceInterface->BindGraphics(naclState.hModule, naclState.hRenderContext);
 
-        if(bFirstCall)
+        const char* argv[] = {"Torque2D"};
+        bool initOK = Game->mainInitialize(1, argv);
+
+        if(initOK)
         {
-            const char* argv[] = {"Torque2D"};
-            Game->mainInitialize(1, argv);
+            bool fullScreen = Con::getBoolVariable( "$pref::Video::fullScreen" );
+            naclState.psFullscreen->SetFullscreen(naclState.hModule, fullScreen ? PP_TRUE : PP_FALSE);
+
+            PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClLoop, 0);
+            naclState.psCore->CallOnMainThread(0, cc, PP_OK);
         }
-
-        bool fullScreen = Con::getBoolVariable( "$pref::Video::fullScreen" );
-        naclState.psFullscreen->SetFullscreen(naclState.hModule, fullScreen ? PP_TRUE : PP_FALSE);
-
-        PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClLoop, 0);
-        naclState.psCore->CallOnMainThread(0, cc, PP_OK);
+        else
+        {
+            SendString("fatal:mainInitialize() returned false");
+        }
     }
     else
     {

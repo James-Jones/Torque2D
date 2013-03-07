@@ -20,10 +20,12 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef TORQUE_OS_NACL//Turn off for NaCl at the moment
-
 // We don't want tests in a shipping version.
 #ifndef TORQUE_SHIPPING
+
+#include "platform\types.h"
+
+#ifndef TORQUE_OS_NACL//Turn off for NaCl at the moment
 
 #ifndef _CONSOLEINTERNAL_H_
 #include "console/consoleInternal.h"
@@ -120,6 +122,6 @@ ConsoleFunction( runAllUnitTests, S32, 1, 1, "() - Runs all the registered unit 
     return result;
 }
 
-#endif // TORQUE_SHIPPING
-
 #endif
+
+#endif // TORQUE_SHIPPING

@@ -31,9 +31,13 @@ Torque2D_32.nexe
 Torque2D_DEBUG_32.nexe
 Torque2D_64.nexe
 Torque2D_DEBUG_64.nexe
-engine/compilers/NaCl VisualStudio 2010/chrome_data
-engine/compilers/NaCl VisualStudio 2010/newlib
-    
+Torque2DNaClAssets.zip
+Torque2DAssetStamp.txt
+nacl/gdbcmd.txt
+
+/engine/compilers/*/chrome_data/
+/engine/compilers/*/Default/
+
 # Compiled source #
 ###################
 *.com

@@ -409,7 +409,7 @@ void Sleep(ALuint t)
     tv.tv_nsec = (t*1000000)%1000000000;
     tv.tv_sec = t/1000;
 
-    while(nanosleep(&tv, &rem) == -1 && errno == EINTR)
+    while(nanosleep(&tv, &rem) == -1 )
         tv = rem;
 }
 

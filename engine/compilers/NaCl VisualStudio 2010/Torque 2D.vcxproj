@@ -154,7 +154,7 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Shipping|NaCl64'">false</LinkIncremental>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Torque2D_DEBUG</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl32'">Torque2D_DEBUG_$(PlatformArchitecture)</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl64'">Torque2D_DEBUG_$(PlatformArchitecture)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|NaCl64'">Torque2D_$(PlatformArchitecture)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Torque2D</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|NaCl32'">Torque2D</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|NaCl64'">Torque2D</TargetName>
@@ -240,7 +240,7 @@
       <AdditionalIncludeDirectories>../../Lib/MSPlatformSDK/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <OutputFile>../../../$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>../../../nacl/$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
@@ -262,7 +262,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../../Lib/zlib;../../Lib/lpng;../../Lib/ljpeg;C:\dev\GitHub\Torque2D\engine\lib\openal\NaCl\openal-soft-1.15.1\include;../../Source;../../source/testing/googleTest;../../source/testing/googleTest/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Lib/zlib;../../Lib/lpng;../../Lib/ljpeg;C:\dev\GitHub\Torque2D\engine\lib\openal\NaCl\openal-soft-1.15.1\include;../../Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TORQUE_DEBUG;TORQUE_DEBUG_GUARD;_CRT_SECURE_NO_DEPRECATE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -286,7 +286,7 @@
       <AdditionalIncludeDirectories>../../Lib/MSPlatformSDK/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <OutputFile>../../../$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>../../../nacl/$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
@@ -297,7 +297,8 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>ppapi_cpp;ppapi;ppapi_gles2;nosys;</AdditionalDependencies>
+      <AdditionalDependencies>ppapi;ppapi_gles2;nosys;</AdditionalDependencies>
+      <CreateNMF>false</CreateNMF>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

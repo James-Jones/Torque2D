@@ -25,6 +25,7 @@
 #include "platformNaCl/platformNaCl.h"
 #include "string/stringTable.h"
 #include <stdarg.h>
+#include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 
@@ -343,7 +344,15 @@ S32 dVprintf(const char *format, void *arglist)
 
 S32 dSprintf(char *buffer, U32 bufferSize, const char *format, ...)
 {
-    return 0;
+   va_list args;
+   va_start(args, format);
+
+   bufferSize;
+   S32 len = vsprintf(buffer, format, args);
+
+   AssertFatal( (U32)len < bufferSize, "dSprintf wrote to more memory than the specified buffer size - Stack Corruption Possible" ); //Added
+
+   return (len);
 }
 
 

@@ -32,6 +32,8 @@
 #include <time.h>
 #include <sys/utime.h>
 
+#include <string>
+
 //------------------------------------------------------------------------------
 
 enum DriveType
@@ -43,6 +45,61 @@ enum DriveType
    DRIVETYPE_RAMDISK = 4,
    DRIVETYPE_UNKNOWN = 5
 };
+
+const int READ_BUFFER_SIZE = 1048576;//Stream in 1MB chunks.
+typedef void (*OnDownloaded)(void* pvUserData, bool bSuccessful);
+
+class NaCLFile
+{
+public:
+    NaCLFile() : bSuccessful(0), bDownloaded(false) {
+    }
+    std::string filebody;
+    char buffer[READ_BUFFER_SIZE];
+    PP_Resource loader;
+    PP_Resource request;
+    OnDownloaded pfnOnDownloaded;
+    void* pvUserData;
+
+    bool bDownloaded;
+    bool bSuccessful;
+};
+
+class DownloadContext
+{
+public:
+    DownloadContext() : id(0), iDownloaded(0) {
+    }
+
+    int id;
+    std::string data;
+    int iDownloaded;
+};
+
+
+int StartDownload(NaCLFile* psFile,
+            const char* url,
+            void* pvUserData,
+            OnDownloaded pfnOnDownloaded);
+
+void FileDownloaded(void* pvUserData, bool bSuccessful)
+{
+    NaCLFile* psFile = (NaCLFile*)pvUserData;
+    psFile->bDownloaded = true;
+    psFile->bSuccessful = bSuccessful;
+}
+
+bool BlockOnFile(NaCLFile* psNaClFile)
+{
+    while(!psNaClFile->bDownloaded)
+    {
+        struct timespec timeToSleep;
+        timeToSleep.tv_sec = 1;
+        timeToSleep.tv_nsec = 500;
+        nanosleep(&timeToSleep, NULL);
+    }
+    return psNaClFile->bSuccessful;
+}
 
 //-------------------------------------- Helper Functions
 static void forwardslash(char *str)
@@ -97,7 +154,7 @@ bool Platform::pathCopy(const char *fromName, const char *toName, bool nooverwri
 File::File()
 : currentStatus(Closed), capability(0)
 {
-    handle = (void *)NULL;
+    handle = new NaCLFile();
 }
 
 //-----------------------------------------------------------------------------
@@ -110,6 +167,7 @@ File::File()
 File::~File()
 {
     close();
+    delete (NaCLFile*)handle;
     handle = (void *)NULL;
 }
 
@@ -124,6 +182,9 @@ File::~File()
 //-----------------------------------------------------------------------------
 File::Status File::open(const char *filename, const AccessMode openMode)
 {
+    NaCLFile* psNaClFile = (NaCLFile*)handle;
+
+    StartDownload(psNaClFile, filename, psNaClFile, FileDownloaded);
     return IOError;
 }
 
@@ -159,6 +220,13 @@ File::Status File::setPosition(S32 position, bool absolutePos)
 //-----------------------------------------------------------------------------
 U32 File::getSize() const
 {
+    NaCLFile* psNaClFile = (NaCLFile*)handle;
+
+    if(BlockOnFile(psNaClFile))
+    {
+        return psNaClFile->filebody.size();
+    }
+
     return 0;
 }
 
@@ -214,6 +282,13 @@ File::Status File::setStatus(File::Status status)
 //-----------------------------------------------------------------------------
 File::Status File::read(U32 size, char *dst, U32 *bytesRead)
 {
+    NaCLFile* psNaClFile = (NaCLFile*)handle;
+    if(BlockOnFile(psNaClFile))
+    {
+        dMemcpy(dst, psNaClFile->filebody.c_str(), size);
+        *bytesRead = size;
+        return Ok;
+    }
     return IOError;
 }
 
@@ -345,3 +420,138 @@ const char *Platform::getUserHomeDirectory()
    return StringTable->insert("home/");
 }
 
+void OnRead(void* pvUserData, int32_t result);
+
+void ReadBody(NaCLFile* psFile)
+{
+    PP_CompletionCallback fileReadCallback;
+    fileReadCallback.func = OnRead;
+    fileReadCallback.user_data = psFile;
+    fileReadCallback.flags = PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
+
+    int iResult = PP_OK;
+    do
+    {
+        iResult = naclState.psURLLoader->ReadResponseBody(psFile->loader, psFile->buffer, READ_BUFFER_SIZE, fileReadCallback);
+        
+        // Handle streaming data directly. Note that we *don't* want to call
+        // OnRead here, since in the case of result > 0 it will schedule
+        // another call to this function. If the network is very fast, we could
+        // end up with a deeply recursive stack.
+        if (iResult > 0)
+        {
+            //AppendDataBytes(buffer, result);
+
+            // Make sure we don't get a buffer overrun.
+            iResult = std::min(READ_BUFFER_SIZE, iResult);
+            // Note that we do *not* try to minimally increase the amount of allocated
+            // memory here by calling url_response_body_.reserve().  Doing so causes a
+            // lot of string reallocations that kills performance for large files.
+            psFile->filebody.insert(psFile->filebody.end(),
+                                    psFile->buffer,
+                                    psFile->buffer + iResult);
+        }
+    } while (iResult > 0);
+
+    if(iResult != PP_OK_COMPLETIONPENDING)
+    {
+        OnRead(psFile, iResult);
+    }
+}
+
+void OnRead(void* pvUserData, int32_t result)
+{
+    NaCLFile* psFile = (NaCLFile*)pvUserData;
+
+    if (result == PP_OK)
+    {
+        // Streaming the file is complete.
+        psFile->pfnOnDownloaded(psFile->pvUserData, true);
+        delete psFile;
+
+    }
+    else if (result > 0)
+    {
+        // The URLLoader just filled "result" number of bytes into our buffer.
+        // Save them and perform another read.
+
+        // Make sure we don't get a buffer overrun.
+        int iNumBytes = std::min(READ_BUFFER_SIZE, result);
+        // Note that we do *not* try to minimally increase the amount of allocated
+        // memory here by calling url_response_body_.reserve().  Doing so causes a
+        // lot of string reallocations that kills performance for large files.
+        psFile->filebody.insert(psFile->filebody.end(),
+                                psFile->buffer,
+                                psFile->buffer + iNumBytes);
+
+        ReadBody(psFile);
+    }
+    else
+    {
+        // A read error occurred.
+        psFile->pfnOnDownloaded(psFile->pvUserData, false);
+        delete psFile;
+    }
+}
+
+void OnOpen(void* user_data, int32_t result)
+{
+    int64_t bytes_received = 0;
+    int64_t total_bytes_to_be_received = 0;
+    NaCLFile* psFile = (NaCLFile*)user_data;
+
+    //Try to pre-allocate memory for the response.
+    if (naclState.psURLLoader->GetDownloadProgress(psFile->loader,
+                                        &bytes_received,
+                                        &total_bytes_to_be_received))
+    {
+        if (total_bytes_to_be_received > 0)
+        {
+            psFile->filebody.reserve(total_bytes_to_be_received);
+        }
+    }
+
+    // We will not use the download progress anymore, so just disable it.
+    naclState.psURLRequest->SetProperty(psFile->request,
+        PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, PP_MakeBool(PP_FALSE));
+    
+    ReadBody(psFile);
+}
+
+int StartDownload(NaCLFile* psFile,
+            const char* url,
+            void* pvUserData,
+            OnDownloaded pfnOnDownloaded)
+{
+    PP_CompletionCallback fileOpenCallback;
+
+    psFile->loader = naclState.psURLLoader->Create(naclState.hModule);
+
+    psFile->request = naclState.psURLRequest->Create(naclState.hModule);
+
+    psFile->pfnOnDownloaded = pfnOnDownloaded;
+
+    psFile->pvUserData = pvUserData;
+
+    naclState.psURLRequest->SetProperty(psFile->request,
+    PP_URLREQUESTPROPERTY_URL, naclState.psVar->VarFromUtf8(url, strlen(url)));
+
+    naclState.psURLRequest->SetProperty(psFile->request,
+        PP_URLREQUESTPROPERTY_METHOD, naclState.psVar->VarFromUtf8("GET", 3));
+
+    naclState.psURLRequest->SetProperty(psFile->request,
+        PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, PP_MakeBool(PP_TRUE));
+
+    fileOpenCallback.func = OnOpen;
+    fileOpenCallback.user_data = psFile;
+    fileOpenCallback.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
+
+    if(naclState.psURLLoader->Open(psFile->loader,
+        psFile->request,
+        fileOpenCallback) != PP_OK_COMPLETIONPENDING)
+    {
+        return 0;
+    }
+
+    return 1;
+}
