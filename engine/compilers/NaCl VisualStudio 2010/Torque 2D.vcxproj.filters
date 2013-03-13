@@ -1212,6 +1212,9 @@
     <ClCompile Include="..\..\source\platformNaCl\naclFileDialog.cc">
       <Filter>platformNaCl</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\platformNaCl\naclLocalFileSystem.cc">
+      <Filter>platformNaCl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\audio\audio.h">
@@ -2479,6 +2482,9 @@
       <Filter>platformNaCl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\platformNaCl\platformNaCl.h">
+      <Filter>platformNaCl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\platformNaCl\naclLocalFileSystem.h">
       <Filter>platformNaCl</Filter>
     </ClInclude>
   </ItemGroup>

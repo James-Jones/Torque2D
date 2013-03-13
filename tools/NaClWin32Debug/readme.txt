@@ -10,4 +10,4 @@ Environment variables used by NaCl_startChromeDebug:
   CHROME_PATH - exampe "C:/Program Files (x86)/Google/Chrome/Application/25.0.1364.97/nacl_irt_x86_64.nexe"
 
 -d/--chrome-data-dir argument to NaCl_startChromeDebug is the full-path to chrome_data directory
-  example - C:\dev\GitHub\Torque2D\engine\compilers\NaCl VisualStudio 2010\chrome_data
+  example - "C:/dev/GitHub/Torque2D/engine/compilers/NaCl VisualStudio 2010/chrome_data"

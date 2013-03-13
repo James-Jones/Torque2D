@@ -31,8 +31,14 @@
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/c/ppb_mouse_lock.h"
+#include "ppapi/c/ppb_file_ref.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/ppb_file_system.h"
+#include "ppapi/c/ppb_url_response_info.h"
 
 #include "ppapi/gles2/gl2ext_ppapi.h"
+
+#include "naclLocalFileSystem.h"
 
 struct NaClPlatState
 {
@@ -62,7 +68,15 @@ struct NaClPlatState
     PPB_Fullscreen* psFullscreen;
     PPB_MouseLock* psMouseLock;
 
+
+    PPB_FileIO* psFileIO;
+    PPB_FileRef* psFileRef;
+    PPB_FileSystem* psFileSys;
+    PPB_URLResponseInfo* psURLResponseInfo;
+
     U32 currentTime;
+
+    NaClLocalFileSystem localFileSys;
 
     NaClPlatState();
 };

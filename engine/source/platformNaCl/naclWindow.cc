@@ -145,6 +145,7 @@ static void SendString(const char* str)
 	naclState.psMessagingInterface->PostMessage(naclState.hModule, CStrToVar(str));
 }
 
+
 void NaClLoop(void* user_data, int32_t result)
 {
     if(Game->isRunning())
@@ -165,6 +166,31 @@ void NaClLoop(void* user_data, int32_t result)
         naclState.psG3D->SwapBuffers(naclState.hRenderContext, cc);
     }
 }
+
+void NaClInitFS(void* user_data, int32_t result)
+{
+    naclState.localFileSys.Open(128*1024*1024);
+}
+
+void NaClInitGame(void* user_data, int32_t result)
+{
+    const char* argv[] = {"Torque2D"};
+    bool initOK = Game->mainInitialize(1, argv);
+
+    if(initOK)
+    {
+        bool fullScreen = Con::getBoolVariable( "$pref::Video::fullScreen" );
+        naclState.psFullscreen->SetFullscreen(naclState.hModule, fullScreen ? PP_TRUE : PP_FALSE);
+
+        PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClLoop, 0);
+        naclState.psCore->CallOnMainThread(0, cc, PP_OK);
+    }
+    else
+    {
+        SendString("fatal:mainInitialize() returned false");
+    }
+}
+
 
 static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   uint32_t argc,
@@ -219,21 +245,14 @@ static void Instance_DidChangeView(PP_Instance instance,
 	    naclState.hRenderContext = naclState.psG3D->Create(naclState.hModule, NULL, attribs);
 	    naclState.psInstanceInterface->BindGraphics(naclState.hModule, naclState.hRenderContext);
 
-        const char* argv[] = {"Torque2D"};
-        bool initOK = Game->mainInitialize(1, argv);
+        PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClInitFS, 0);
+        naclState.psCore->CallOnMainThread(0, cc, PP_OK);
 
-        if(initOK)
-        {
-            bool fullScreen = Con::getBoolVariable( "$pref::Video::fullScreen" );
-            naclState.psFullscreen->SetFullscreen(naclState.hModule, fullScreen ? PP_TRUE : PP_FALSE);
-
-            PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClLoop, 0);
-            naclState.psCore->CallOnMainThread(0, cc, PP_OK);
-        }
-        else
-        {
-            SendString("fatal:mainInitialize() returned false");
-        }
+        //The scheduling delay here is to give the brower a chance to
+        //start (and maybe finish) opening the local file system
+        //before starting to execute Game->mainInitialize.
+        cc = PP_MakeCompletionCallback(NaClInitGame, 0);
+        naclState.psCore->CallOnMainThread(100, cc, PP_OK);
     }
     else
     {
@@ -383,6 +402,14 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
     naclState.psFullscreen = (PPB_Fullscreen*) get_browser(PPB_FULLSCREEN_INTERFACE);
 
     naclState.psMouseLock = (PPB_MouseLock*) get_browser(PPB_MOUSELOCK_INTERFACE);
+
+    naclState.psFileIO = (PPB_FileIO*) get_browser(PPB_FILEIO_INTERFACE);
+
+    naclState.psFileRef = (PPB_FileRef*) get_browser(PPB_FILEREF_INTERFACE);
+
+    naclState.psFileSys = (PPB_FileSystem*) get_browser(PPB_FILESYSTEM_INTERFACE);
+
+    naclState.psURLResponseInfo = (PPB_URLResponseInfo*) get_browser(PPB_URLRESPONSEINFO_INTERFACE);
 
     return PP_OK;
 }

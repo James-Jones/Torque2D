@@ -33,7 +33,7 @@ Torque2D_64.nexe
 Torque2D_DEBUG_64.nexe
 Torque2DNaClAssets.zip
 Torque2DAssetStamp.txt
-nacl/gdbcmd.txt
+gdbcmd.txt
 
 /engine/compilers/*/chrome_data/
 /engine/compilers/*/Default/
