@@ -137,7 +137,8 @@ File::Status File::open(const char *filename, const AccessMode openMode)
 //-----------------------------------------------------------------------------
 U32 File::getPosition() const
 {
-    return 0;
+    const NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
+    return psLocalFile->getPosition();
 }
 
 //-----------------------------------------------------------------------------
@@ -154,7 +155,15 @@ U32 File::getPosition() const
 //-----------------------------------------------------------------------------
 File::Status File::setPosition(S32 position, bool absolutePos)
 {
-    return IOError;
+    NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
+
+    psLocalFile->setPosition(position, absolutePos);
+
+    if(psLocalFile->getPosition() >= getSize())
+    {
+        return currentStatus = EOS;
+    }
+    return currentStatus = Ok;
 }
 
 //-----------------------------------------------------------------------------
@@ -176,7 +185,7 @@ U32 File::getSize() const
 //-----------------------------------------------------------------------------
 File::Status File::flush()
 {
-    return IOError;
+    return currentStatus = Ok;
 }
 
 //-----------------------------------------------------------------------------
@@ -186,7 +195,11 @@ File::Status File::flush()
 //-----------------------------------------------------------------------------
 File::Status File::close()
 {
-    return IOError;
+    NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
+
+    psLocalFile->CloseFile();
+
+    return currentStatus = Closed;
 }
 
 //-----------------------------------------------------------------------------
@@ -223,7 +236,7 @@ File::Status File::read(U32 size, char *dst, U32 *bytesRead)
 {
     NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
 
-    naclState.localFileSys.ReadFile(psLocalFile, size, dst, bytesRead);
+    psLocalFile->ReadFile(size, dst, bytesRead);
 
     return Ok;
 }

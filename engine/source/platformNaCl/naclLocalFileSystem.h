@@ -22,8 +22,18 @@ private:
     char* mFileBody;
     bool mReady;
 
+    S32 mFileOffset;
+
 public:
     ~NaClLocalFile();
+
+    void ReadFile(U32 size, char *dst, U32 *bytesRead);
+
+    void CloseFile();
+
+    void setPosition(S32 position, bool absolutePos);
+
+    U32 getPosition() const;
 
     PP_Resource getFile() const;
     PP_FileInfo* getFileInfo();
@@ -38,7 +48,7 @@ class NaClLocalFileSystem
 public:
     NaClLocalFileSystem();
 
-    void Open(int64_t sizeInBytes);
+    void Open(int64_t sizeInBytes, PP_CompletionCallback_Func callback);
 
     void MakeDirectory(const char* path);
 
@@ -47,10 +57,6 @@ public:
     void RenameFile(const char* path, const char* newPath);
 
     NaClLocalFile* OpenFile(const char* path, const File::AccessMode openMode);
-
-    void ReadFile(NaClLocalFile* localFile, U32 size, char *dst, U32 *bytesRead);
-
-    void CloseFile(NaClLocalFile*);
 
 private:
 

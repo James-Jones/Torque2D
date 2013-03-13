@@ -20,8 +20,8 @@ static void Wait()
 class LocalRead
 {
 public:
-    LocalRead(PP_Resource inFileIO, U32 inSize, char* inBuffer) : fileIO(inFileIO), sizeToDownload(inSize),
-        bufferOffset(0), bytesLeft(inSize), buffer(inBuffer)
+    LocalRead(PP_Resource inFileIO, U32 offset, U32 inSize, char* inBuffer) : fileIO(inFileIO), sizeToDownload(inSize),
+        bufferOffset(offset), bytesLeft(inSize), buffer(inBuffer+offset)
     {
     }
 
@@ -76,7 +76,7 @@ void NaClLocalFile_FileOpenCallback(void*data, int32_t result);
 NaClLocalFile::NaClLocalFile(
     PP_Resource fs,
     const char* path,
-    const File::AccessMode openMode) {
+    const File::AccessMode openMode) : mFileOffset(0), mFileBody(NULL) {
 
     PP_Resource fileRef = naclState.psFileRef->Create(fs, path);
     
@@ -113,9 +113,12 @@ void NaClLocalFile::Read(U32 size, char *dst, U32 *bytesRead)
 {
     U32 totalSize = mFileInfo.size;
 
-    mFileBody = new char[totalSize];
+    if(!mFileBody)
+    {
+        mFileBody = new char[totalSize];
+    }
 
-    LocalRead lread(mFile, totalSize, mFileBody);
+    LocalRead lread(mFile, mFileOffset, size, mFileBody);
 
     PP_CompletionCallback cb;
     cb.func = LocalReadCallback;
@@ -132,6 +135,38 @@ void NaClLocalFile::Read(U32 size, char *dst, U32 *bytesRead)
     {
         Wait();
     }
+}
+
+void NaClLocalFile::setPosition(S32 position, bool absolutePos)
+{
+    if(absolutePos)
+    {
+        mFileOffset = position;
+    }
+    else
+    {
+        mFileOffset += position;
+    }
+}
+U32 NaClLocalFile::getPosition() const {
+    return mFileOffset;
+}
+
+
+void NaClLocalFile::ReadFile(U32 size, char *dst, U32 *bytesRead)
+{
+    while(!mReady)
+    {
+        Wait();
+    }
+
+    dMemcpy(dst, getContents(), size);
+    *bytesRead = size;
+}
+
+void NaClLocalFile::CloseFile()
+{
+    naclState.psFileIO->Close(mFile);
 }
 
 PP_Resource NaClLocalFile::getFile() const {
@@ -161,20 +196,17 @@ void NaClLocalFile_FileOpenCallback(void*data, int32_t result) {
     naclState.psFileIO->Query(file->getFile(), file->getFileInfo(), queryCb);
 }
 
-void FileSystemOpenCallback(void* data, int32_t result);
 void IngoreCallback(void* data, int32_t result);
 
 
 NaClLocalFileSystem::NaClLocalFileSystem() : mFileSystemOpen(false), mFileSystem(0){}
 
-void NaClLocalFileSystem::Open(int64_t sizeInBytes)
+void NaClLocalFileSystem::Open(int64_t sizeInBytes, PP_CompletionCallback_Func callback)
 {
-    mFileSystemOpen = false;
-
     mFileSystem = naclState.psFileSys->Create(naclState.hModule, PP_FILESYSTEMTYPE_LOCALPERSISTENT);
 
     PP_CompletionCallback fileSystemOpenCallback;
-    fileSystemOpenCallback.func = FileSystemOpenCallback;
+    fileSystemOpenCallback.func = callback;
     fileSystemOpenCallback.user_data = this;
     fileSystemOpenCallback.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
 
@@ -221,33 +253,9 @@ void NaClLocalFileSystem::RenameFile(const char* path, const char* newPath)
 
 NaClLocalFile* NaClLocalFileSystem::OpenFile(const char* path, const File::AccessMode openMode)
 {
-    while(!mFileSystemOpen)
-    {
-        Wait();
-    }
     return new NaClLocalFile(mFileSystem, path, openMode);
 }
 
-void NaClLocalFileSystem::ReadFile(NaClLocalFile* localFile, U32 size, char *dst, U32 *bytesRead)
-{
-    while(!localFile->mReady)
-    {
-        Wait();
-    }
-
-    dMemcpy(dst, localFile->getContents(), size);
-    *bytesRead = size;
-}
-
-void NaClLocalFileSystem::CloseFile(NaClLocalFile* psFile)
-{
-    naclState.psFileIO->Close(psFile->mFile);
-}
-
-void FileSystemOpenCallback(void* data, int32_t result) {
-    NaClLocalFileSystem* psFS = (NaClLocalFileSystem*)data;
-    psFS->mFileSystemOpen = true;
-}
 
 void IngoreCallback(void* data, int32_t result) {
 }
