@@ -297,7 +297,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>ppapi;ppapi_gles2;nosys;</AdditionalDependencies>
+      <AdditionalDependencies>ppapi;ppapi_gles2;pthread;nosys</AdditionalDependencies>
       <CreateNMF>false</CreateNMF>
     </Link>
   </ItemDefinitionGroup>

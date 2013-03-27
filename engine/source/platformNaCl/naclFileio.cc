@@ -116,6 +116,20 @@ File::~File()
     handle = (void *)NULL;
 }
 
+typedef struct
+{
+    const char* filename;
+    File::AccessMode openMode;
+    NaClLocalFile* openedFile;
+    Semaphore _Waiter;
+} OpenFileParams;
+
+void OpenFileFromMainThread(void* user_data, int32_t result)
+{
+    OpenFileParams* params = (OpenFileParams*)user_data;
+    params->openedFile = naclState.localFileSys.OpenFile(params->filename, params->openMode);
+    params->_Waiter.release();
+}
 
 //-----------------------------------------------------------------------------
 // Open a file in the mode specified by openMode (Read, Write, or ReadWrite).
@@ -127,9 +141,28 @@ File::~File()
 //-----------------------------------------------------------------------------
 File::Status File::open(const char *filename, const AccessMode openMode)
 {
-    NaClLocalFile* psLocalFile = naclState.localFileSys.OpenFile(filename, openMode);
-    handle = psLocalFile;
-    return Ok;
+    OpenFileParams* params = new OpenFileParams;
+    params->filename = filename;
+    params->openMode = openMode;
+
+    params->openedFile = NULL;
+
+    PP_CompletionCallback callback = PP_MakeCompletionCallback(OpenFileFromMainThread, params);
+    naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+    params->_Waiter.acquire();
+
+    AssertFatal(params->openedFile != NULL, "Failed to open file");
+
+    handle = params->openedFile;
+
+    params->openedFile->_Waiter.acquire();
+    params->openedFile->_Waiter.release();
+
+    currentStatus = Ok;
+
+    delete params;
+
+    return currentStatus;
 }
 
 //-----------------------------------------------------------------------------
@@ -188,6 +221,13 @@ File::Status File::flush()
     return currentStatus = Ok;
 }
 
+void CloseFileFromMainThread(void* user_data, int32_t result)
+{
+    NaClLocalFile* psLocalFile = (NaClLocalFile*)user_data;
+
+    psLocalFile->CloseFile();
+}
+
 //-----------------------------------------------------------------------------
 // Close the File.
 //
@@ -197,7 +237,8 @@ File::Status File::close()
 {
     NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
 
-    psLocalFile->CloseFile();
+    PP_CompletionCallback callback = PP_MakeCompletionCallback(CloseFileFromMainThread, psLocalFile);
+    naclState.psCore->CallOnMainThread(0, callback, PP_OK);
 
     return currentStatus = Closed;
 }
@@ -215,7 +256,7 @@ File::Status File::getStatus() const
 //-----------------------------------------------------------------------------
 File::Status File::setStatus()
 {
-    return IOError;
+    return Ok;
 }
 
 //-----------------------------------------------------------------------------
@@ -224,6 +265,13 @@ File::Status File::setStatus()
 File::Status File::setStatus(File::Status status)
 {
     return currentStatus = status;
+}
+
+void ReadFileFromMainThread(void* user_data, int32_t result)
+{
+    ReadFileParams* params = (ReadFileParams*)user_data;
+
+    params->file->ReadFile(params);
 }
 
 //-----------------------------------------------------------------------------
@@ -236,7 +284,19 @@ File::Status File::read(U32 size, char *dst, U32 *bytesRead)
 {
     NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
 
-    psLocalFile->ReadFile(size, dst, bytesRead);
+    ReadFileParams* params = new ReadFileParams;
+    params->size = size;
+    params->dst = dst;
+    params->file = psLocalFile;
+
+    PP_CompletionCallback callback = PP_MakeCompletionCallback(ReadFileFromMainThread, params);
+    naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+
+    //Wait for the read to complete.
+    params->_Waiter.acquire();
+
+    dMemcpy(dst, psLocalFile->getContents()+psLocalFile->getPosition(), psLocalFile->getBytesRead());
+    *bytesRead = psLocalFile->getBytesRead();
 
     return Ok;
 }

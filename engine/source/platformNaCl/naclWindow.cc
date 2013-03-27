@@ -5,6 +5,7 @@
 #include "game/gameInterface.h"
 #include "math/mPoint.h"
 #include "al/alc.h"
+#include <string>
 
 NaClPlatState naclState;
 
@@ -126,77 +127,96 @@ NaClPlatState::NaClPlatState() : currentTime(0)
 {
 }
 
-/**
- * Creates new string PP_Var from C string. The resulting object will be a
- * refcounted string object. It will be AddRef()ed for the caller. When the
- * caller is done with it, it should be Release()d.
- * @param[in] str C string to be converted to PP_Var
- * @return PP_Var containing string.
- */
-static struct PP_Var CStrToVar(const char* str) {
-  if (naclState.psVarInterface != NULL) {
-	return naclState.psVarInterface->VarFromUtf8(str, strlen(str));
-  }
-  return PP_MakeUndefined();
+void SwapBuffersCallback(void* user_data, int32_t result)
+{
+
 }
 
-static void SendString(const char* str)
+//Simple test
+void TestRendering(void* user_data, int32_t result)
 {
-	naclState.psMessagingInterface->PostMessage(naclState.hModule, CStrToVar(str));
+    naclState.psGL->ClearColor(naclState.hRenderContext, 1, 0, 1, 1);
+    naclState.psGL->Clear(naclState.hRenderContext, GL_COLOR_BUFFER_BIT);
 }
 
-
-void NaClLoop(void* user_data, int32_t result)
+void SetContextZero(void* user_data, int32_t result)
 {
-    if(Game->isRunning())
-    {
-        glSetCurrentContextPPAPI(naclState.hRenderContext);
-
-#if 0
-        Game->mainLoop();
-#else
-        //Simple test
-        naclState.psGL->ClearColor(naclState.hRenderContext, 1, 0, 1, 1);
-        naclState.psGL->Clear(naclState.hRenderContext, GL_COLOR_BUFFER_BIT);
-#endif
-
-        glSetCurrentContextPPAPI(0);
-
-        PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClLoop, 0);
-        naclState.psG3D->SwapBuffers(naclState.hRenderContext, cc);
-    }
+    glSetCurrentContextPPAPI(0);
 }
 
-void NaClInitGame(void* user_data, int32_t result)
+void SetContextMain(void* user_data, int32_t result)
 {
+    glSetCurrentContextPPAPI(naclState.hRenderContext);
+}
+
+void SwapBuffers(void* user_data, int32_t result)
+{
+    PP_CompletionCallback cc = PP_MakeCompletionCallback(SwapBuffersCallback, 0);
+    naclState.psG3D->SwapBuffers(naclState.hRenderContext, cc);
+}
+
+void SetupFullscreenMode(void* user_data, int32_t result)
+{
+    bool fullScreen = Con::getBoolVariable( "$pref::Video::fullScreen" );
+    naclState.psFullscreen->SetFullscreen(naclState.hModule, fullScreen ? PP_TRUE : PP_FALSE);
+}
+
+void LogicThread(void* data)
+{
+    bool initOK;
     const char* argv[] = {"Torque2D"};
-    bool initOK = Game->mainInitialize(1, argv);
+
+    AssertFatal(naclState.psCore->IsMainThread() == PP_FALSE, "Running on the wrong thread");
+
+    initOK = Game->mainInitialize(1, argv);
 
     if(initOK)
     {
-        bool fullScreen = Con::getBoolVariable( "$pref::Video::fullScreen" );
-        naclState.psFullscreen->SetFullscreen(naclState.hModule, fullScreen ? PP_TRUE : PP_FALSE);
+        PP_CompletionCallback callback = PP_MakeCompletionCallback(SetupFullscreenMode, 0);
+        naclState.psCore->CallOnMainThread(0, callback, PP_OK);
 
-        PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClLoop, 0);
-        naclState.psCore->CallOnMainThread(0, cc, PP_OK);
+        if(Game->isRunning())
+        {
+            //glSetCurrentContextPPAPI(naclState.hRenderContext)
+            PP_CompletionCallback callback = PP_MakeCompletionCallback(SetContextMain, 0);
+            naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+
+    #if 0
+            Game->mainLoop();
+    #else
+            //Simple test
+            callback = PP_MakeCompletionCallback(TestRendering, 0);
+            naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+    #endif
+
+            //glSetCurrentContextPPAPI(0)
+            callback = PP_MakeCompletionCallback(SetContextZero, 0);
+            naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+
+            //SwapBuffers
+            callback = PP_MakeCompletionCallback(SwapBuffers, 0);
+            naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+        }
     }
     else
     {
-        SendString("fatal:mainInitialize() returned false");
+        Platform::outputDebugString("fatal:mainInitialize() returned false");
     }
 }
 
-void ScheduleInitGame(void* user_data, int32_t result)
+void StartLogicThread(void* user_data, int32_t result)
 {
-    PP_CompletionCallback cc = PP_MakeCompletionCallback(NaClInitGame, 0);
-    naclState.psCore->CallOnMainThread(0, cc, PP_OK);
+    if(naclState.psCore->IsMainThread())
+    {
+        naclState.logicThread = new Thread(LogicThread);
+    }
 }
 
 void NaClInit(void* user_data, int32_t result)
 {
     //Open the file system asynchronously.
     //Once completed, call ScheduleInitGame.
-    naclState.localFileSys.Open(128*1024*1024, ScheduleInitGame);
+    naclState.localFileSys.Open("//myapp/", 128*1024*1024, StartLogicThread);
 }
 
 static PP_Bool Instance_DidCreate(PP_Instance instance,
@@ -211,6 +231,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
 }
 
 static void Instance_DidDestroy(PP_Instance instance) {
+    delete naclState.logicThread;
     Game->mainShutdown();
     naclState.psCore->ReleaseResource(naclState.hRenderContext);
     naclState.hRenderContext = 0;
@@ -411,6 +432,11 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
     naclState.psFileSys = (PPB_FileSystem*) get_browser(PPB_FILESYSTEM_INTERFACE);
 
     naclState.psURLResponseInfo = (PPB_URLResponseInfo*) get_browser(PPB_URLRESPONSEINFO_INTERFACE);
+
+#ifdef PPAPI_25
+    naclState.psConsole = (PPB_Console*) get_browser(PPB_CONSOLE_INTERFACE);
+    naclState.psMessageLoop = (PPB_MessageLoop*) get_browser(PPB_MESSAGELOOP_INTERFACE);
+#endif
 
     return PP_OK;
 }

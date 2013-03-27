@@ -130,14 +130,20 @@ var common = (function () {
   function handleMessage(message_event) {
 
     if (typeof message_event.data === 'string') {
+	  handled = false;
       for (var type in defaultMessageTypes) {
         if (defaultMessageTypes.hasOwnProperty(type)) {
           if (startsWith(message_event.data, type + ':')) {
             func = defaultMessageTypes[type];
             func(message_event.data.slice(type.length + 1));
+			handled = true;
           }
         }
       }
+	  if(!handled)
+	  {
+		console.log(message_event.data);
+	  }
     }
 
     if (typeof window.handleMessage !== 'undefined') {

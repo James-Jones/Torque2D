@@ -32,15 +32,11 @@
 struct PlatformMutexData
 {
    pthread_mutex_t mMutex;
+   bool              locked;
+   U32         lockedByThread;
 
    PlatformMutexData()
    {
-      mMutex = PTHREAD_MUTEX_INITIALIZER;
-   }
-
-   bool ValidMutex() const
-   {
-       return mMutex.mutex_handle != NC_INVALID_HANDLE;
    }
 };
 
@@ -50,15 +46,23 @@ struct PlatformMutexData
 
 Mutex::Mutex()
 {
+   bool ok;
    mData = new PlatformMutexData;
-
-   pthread_mutex_init(&mData->mMutex, NULL);
+   pthread_mutexattr_t attr;
+   ok = pthread_mutexattr_init(&attr);
+   ok = pthread_mutexattr_settype(&attr,PTHREAD_MUTEX_RECURSIVE);
+   ok = pthread_mutex_init(&(mData->mMutex),&attr);
+   AssertFatal(ok == 0, "Mutex() failed: pthread_mutex_init() failed.");
+   
+   mData->locked = false;
+   mData->lockedByThread = 0;
 }
 
 Mutex::~Mutex()
 {
-   if(mData && mData->ValidMutex())
-      pthread_mutex_destroy(&mData->mMutex);
+   bool ok;
+   ok = pthread_mutex_destroy( &(mData->mMutex) );
+   AssertFatal(ok == 0, "~Mutex() failed: pthread_mutex_destroy() failed.");
    
    SAFE_DELETE(mData);
 }
@@ -69,21 +73,32 @@ Mutex::~Mutex()
 
 bool Mutex::lock(bool block /* = true */)
 {
-   if(mData == NULL || !mData->ValidMutex())
-      return false;
+   bool ok;
 
    if(block)
    {
-        return (bool)pthread_mutex_lock(&mData->mMutex) == 0;
+      ok = pthread_mutex_lock( &(mData->mMutex) );
+      AssertFatal( ok == 0, "Mutex::lockMutex() failed: pthread_mutex_lock() failed -- unknown reason.");
+   } 
+   else {
+      ok = pthread_mutex_trylock( &(mData->mMutex) );
+      // returns 0 if lock succeeded.
+      if( ok != 0 )
+         return false;
+
+      AssertFatal( ok == 0, "Mutex::lockMutex(non blocking) failed: pthread_mutex_trylock() failed -- unknown reason.");
    }
 
-   return (bool)pthread_mutex_trylock(&mData->mMutex) == 0;
+   mData->locked = true;
+   mData->lockedByThread = ThreadManager::getCurrentThreadId();
+   return true;
 }
 
 void Mutex::unlock()
 {
-   if(mData == NULL || !mData->ValidMutex())
-      return;
-
-    pthread_mutex_unlock(&mData->mMutex);
+   bool ok;
+   ok = pthread_mutex_unlock( &(mData->mMutex) );
+   AssertFatal( ok == 0, "Mutex::unlockMutex() failed: pthread_mutex_unlock() failed.");
+   mData->locked = false;
+   mData->lockedByThread = 0;
 }

@@ -3,24 +3,18 @@
 #include "io/zip/zipArchive.h"
 #include "io/memstream.h"
 #include "console/console.h"
+#include "math/mMathFn.h";
 
 #include <string>
 #include <vector>
 
 #include "naclLocalFileSystem.h"
 
-static void Wait()
-{
-    struct timespec timeToSleep;
-    timeToSleep.tv_sec = 1;
-    timeToSleep.tv_nsec = 1000;
-    nanosleep(&timeToSleep, NULL);
-}
-
 class LocalRead
 {
 public:
-    LocalRead(PP_Resource inFileIO, U32 offset, U32 inSize, char* inBuffer) : fileIO(inFileIO), sizeToDownload(inSize),
+    LocalRead(Semaphore* sem, PP_Resource inFileIO, U32 offset, U32 inSize, char* inBuffer) : 
+      semaphore(sem), fileIO(inFileIO), sizeToDownload(inSize),
         bufferOffset(offset), bytesLeft(inSize), buffer(inBuffer+offset)
     {
     }
@@ -34,6 +28,8 @@ public:
             return true;
         return false;
     }
+
+    Semaphore* semaphore;
 
     char* buffer;
     U32 bufferOffset;
@@ -65,6 +61,10 @@ void LocalReadCallback(void* data, int32_t bytes_read) {
                                 dload->bytesLeft,
                                 cb);
     }
+    else
+    {
+        dload->semaphore->release();
+    }
 }
 
 
@@ -77,6 +77,8 @@ NaClLocalFile::NaClLocalFile(
     PP_Resource fs,
     const char* path,
     const File::AccessMode openMode) : mFileOffset(0), mFileBody(NULL) {
+
+    mFileInfo.size = 0;
 
     PP_Resource fileRef = naclState.psFileRef->Create(fs, path);
     
@@ -101,40 +103,15 @@ NaClLocalFile::NaClLocalFile(
     fileOpenCallback.user_data = this;
     fileOpenCallback.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
 
-    naclState.psFileIO->Open(mFile, fileRef, openFlags, fileOpenCallback);
+    int32_t result = naclState.psFileIO->Open(mFile, fileRef, openFlags, fileOpenCallback);
+    _Waiter.acquire();
+
+    AssertFatal(result == PP_OK_COMPLETIONPENDING, "File open failed");
 }
 
 NaClLocalFile::~NaClLocalFile()
 {
     delete [] mFileBody;
-}
-
-void NaClLocalFile::Read(U32 size, char *dst, U32 *bytesRead)
-{
-    U32 totalSize = mFileInfo.size;
-
-    if(!mFileBody)
-    {
-        mFileBody = new char[totalSize];
-    }
-
-    LocalRead lread(mFile, mFileOffset, size, mFileBody);
-
-    PP_CompletionCallback cb;
-    cb.func = LocalReadCallback;
-    cb.user_data = &lread;
-    cb.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
-
-    naclState.psFileIO->Read(lread.fileIO,
-                            lread.bufferOffset,
-                            &lread.buffer[lread.bufferOffset],
-                            lread.bytesLeft,
-                            cb);
-
-    while(lread.done() == false)
-    {
-        Wait();
-    }
 }
 
 void NaClLocalFile::setPosition(S32 position, bool absolutePos)
@@ -152,16 +129,34 @@ U32 NaClLocalFile::getPosition() const {
     return mFileOffset;
 }
 
-
-void NaClLocalFile::ReadFile(U32 size, char *dst, U32 *bytesRead)
+void NaClLocalFile::ReadFile(ReadFileParams* params)
 {
-    while(!mReady)
+    AssertFatal(mReady, "File not opened");
+
+    U32 size = params->size;
+    char *dst = params->dst;
+
+    U32 totalSize = mFileInfo.size;
+
+    if(!mFileBody)
     {
-        Wait();
+        mFileBody = new char[totalSize];
     }
 
-    dMemcpy(dst, getContents(), size);
-    *bytesRead = size;
+    mBytesRead = getMin(size-mFileOffset, totalSize-mFileOffset);
+
+    LocalRead lread(&params->_Waiter, mFile, mFileOffset, mBytesRead, mFileBody);
+
+    PP_CompletionCallback cb;
+    cb.func = LocalReadCallback;
+    cb.user_data = &lread;
+    cb.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
+
+    naclState.psFileIO->Read(lread.fileIO,
+                            lread.bufferOffset,
+                            &lread.buffer[lread.bufferOffset],
+                            lread.bytesLeft,
+                            cb);
 }
 
 void NaClLocalFile::CloseFile()
@@ -172,28 +167,43 @@ void NaClLocalFile::CloseFile()
 PP_Resource NaClLocalFile::getFile() const {
     return mFile;
 }
+const PP_FileInfo* NaClLocalFile::getFileInfo() const {
+    return &mFileInfo;
+}
 PP_FileInfo* NaClLocalFile::getFileInfo() {
     return &mFileInfo;
 }
 const char* NaClLocalFile::getContents() const {
     return mFileBody;
 }
+const U32 NaClLocalFile::getBytesRead() const {
+    return mBytesRead;
+}
+
+void NaClLocalFile_FileQueryCallback(void*data, int32_t result) {
+    NaClLocalFile* file = static_cast<NaClLocalFile*>(data);
+    file->_Waiter.release();
+}
 
 void NaClLocalFile_FileOpenCallback(void*data, int32_t result) {
-    if (result != PP_OK) {
-    return;
-    }
     NaClLocalFile* file = static_cast<NaClLocalFile*>(data);
+
+    if (result != PP_OK) {
+        file->_Waiter.release();
+        return;
+    }
 
     file->mReady = true;
 
     PP_CompletionCallback queryCb;
-    queryCb.func = NULL;
+    queryCb.func = NaClLocalFile_FileQueryCallback;
     queryCb.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
     queryCb.user_data = data;
 
     // Query the file in order to get the file size.
-    naclState.psFileIO->Query(file->getFile(), file->getFileInfo(), queryCb);
+    S32 queryResult = naclState.psFileIO->Query(file->getFile(), file->getFileInfo(), queryCb);
+
+    AssertFatal(queryResult == PP_OK_COMPLETIONPENDING, "Failed to submit file query");
 }
 
 void IngoreCallback(void* data, int32_t result);
@@ -201,17 +211,16 @@ void IngoreCallback(void* data, int32_t result);
 
 NaClLocalFileSystem::NaClLocalFileSystem() : mFileSystemOpen(false), mFileSystem(0){}
 
-void NaClLocalFileSystem::Open(int64_t sizeInBytes, PP_CompletionCallback_Func callback)
+void NaClLocalFileSystem::Open(const char* root, int64_t sizeInBytes, PP_CompletionCallback_Func callback)
 {
     mFileSystem = naclState.psFileSys->Create(naclState.hModule, PP_FILESYSTEMTYPE_LOCALPERSISTENT);
 
-    PP_CompletionCallback fileSystemOpenCallback;
-    fileSystemOpenCallback.func = callback;
-    fileSystemOpenCallback.user_data = this;
-    fileSystemOpenCallback.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
+    PP_CompletionCallback fileSystemOpenCallback = PP_MakeCompletionCallback(callback, this);
 
     int32_t result = naclState.psFileSys->Open(mFileSystem, sizeInBytes, fileSystemOpenCallback);
     AssertFatal(result == PP_OK_COMPLETIONPENDING, "File system open failed");
+
+    mRoot = std::string(root);
 }
 
 void NaClLocalFileSystem::MakeDirectory(const char* path)
@@ -253,7 +262,7 @@ void NaClLocalFileSystem::RenameFile(const char* path, const char* newPath)
 
 NaClLocalFile* NaClLocalFileSystem::OpenFile(const char* path, const File::AccessMode openMode)
 {
-    return new NaClLocalFile(mFileSystem, path, openMode);
+    return new NaClLocalFile(mFileSystem, (mRoot+path).c_str(), openMode);
 }
 
 

@@ -66,14 +66,22 @@ struct PlatformThreadData
 static void* ThreadRunHandler(void * arg)
 {
    PlatformThreadData* mData = reinterpret_cast<PlatformThreadData*>(arg);
+   Thread *thread = mData->mThread;
+
    mData->mThreadID = ThreadManager::getCurrentThreadId();
    
    ThreadManager::addThread(mData->mThread);
    mData->mThread->run(mData->mRunArg);
    ThreadManager::removeThread(mData->mThread);
 
-   // we could delete the Thread here, if it wants to be auto-deleted...
    mData->mGateway.release();
+
+   // we could delete the Thread here, if it wants to be auto-deleted...
+   if(thread->autoDelete)
+   {
+      ThreadManager::removeThread(thread);
+      delete thread;
+   }
    // the end of this function is where the created thread will die.
 
    return NULL;
@@ -89,6 +97,8 @@ Thread::Thread(ThreadRunFunction func /* = 0 */, void *arg /* = 0 */, bool start
    mData->mRunFunc = func;
    mData->mRunArg = arg;
    mData->mThread = this;
+   mData->mThreadID = 0;
+   autoDelete = autodelete;
 
    if(start_thread)
       start();
@@ -131,12 +141,15 @@ bool Thread::join()
    mData->mAlive = false;
 
 
-   int result = pthread_join(mData->mThreadHnd, NULL);
-
+   // not using pthread_join here because pthread_join cannot deal
+   // with multiple simultaneous calls.
+   mData->mGateway.acquire();
+   mData->mGateway.release();
+   /*int result = pthread_join(mData->mThreadHnd, NULL);
    if(result != 0)
    {
        return false;
-   }
+   }*/
 
    return true;
 }
@@ -149,7 +162,16 @@ void Thread::run(void *arg /* = 0 */)
 
 bool Thread::isAlive()
 {
-    return mData->mAlive;
+   if(mData->mThreadID == 0)
+      return false;
+
+   if( mData->mGateway.acquire(false) ) 
+   {
+     mData->mGateway.release();
+     return false; // we got the lock, it aint alive.
+   }
+   else
+     return true; // we could not get the lock, it must be alive.
 }
 
 U32 Thread::getId()
@@ -159,13 +181,12 @@ U32 Thread::getId()
 
 U32 ThreadManager::getCurrentThreadId()
 {
-    AssertFatal(false, "getCurrentThreadId with ptheads not handled");
-    return 0;
-    //return pthread_self();
+    return (U32)pthread_self();
 }
 
 bool ThreadManager::compare(U32 threadId_1, U32 threadId_2)
 {
-    return (threadId_1 == threadId_2);
+    return (bool)pthread_equal((pthread_t)threadId_1, (pthread_t)threadId_2);
+    //return (threadId_1 == threadId_2);
     //return pthread_equal(threadId_1, threadId_2);
 }

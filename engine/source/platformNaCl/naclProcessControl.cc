@@ -39,6 +39,13 @@ void Platform::forceShutdown(S32 returnValue)
    exit(returnValue);
 }
 
+/**
+ * Creates new string PP_Var from C string. The resulting object will be a
+ * refcounted string object. It will be AddRef()ed for the caller. When the
+ * caller is done with it, it should be Release()d.
+ * @param[in] str C string to be converted to PP_Var
+ * @return PP_Var containing string.
+ */
 static struct PP_Var CStrToVar(const char* str) {
   if (naclState.psVarInterface != NULL) {
 	return naclState.psVarInterface->VarFromUtf8(str, strlen(str));
@@ -46,7 +53,28 @@ static struct PP_Var CStrToVar(const char* str) {
   return PP_MakeUndefined();
 }
 
+static void SendStringMainThreadCallback(void* user_data, int32_t result)
+{
+    std::string* str = (std::string*) (user_data);
+    PP_Var naclString = CStrToVar(str->c_str());
+	naclState.psMessagingInterface->PostMessage(naclState.hModule, naclString);
+    naclState.psVarInterface->Release(naclString);
+    delete str;
+}
+
 void Platform::outputDebugString( const char *string )
 {
-    naclState.psMessagingInterface->PostMessage(naclState.hModule, CStrToVar(string));
+    if(naclState.psCore->IsMainThread())
+    {
+        PP_Var naclString = CStrToVar(string);
+        naclState.psMessagingInterface->PostMessage(naclState.hModule, naclString);
+        naclState.psVarInterface->Release(naclString);
+    }
+    else
+    {
+        std::string* msg = new std::string(string);
+
+        PP_CompletionCallback callback = PP_MakeCompletionCallback(SendStringMainThreadCallback, msg);
+        naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+    }
 }
