@@ -284,10 +284,26 @@ File::Status File::read(U32 size, char *dst, U32 *bytesRead)
     params->_Waiter.acquire();
 
     dMemcpy(dst, psLocalFile->getContents()+psLocalFile->getPosition(), psLocalFile->getBytesRead());
-    *bytesRead = psLocalFile->getBytesRead();
 
-    return Ok;
+    if(bytesRead)
+    {
+        *bytesRead = psLocalFile->getBytesRead();
+    }
+
+    currentStatus = Ok;
+
+    delete params;
+
+    return currentStatus;
 }
+
+void WriteFileFromMainThread(void* user_data, int32_t result)
+{
+    WriteFileParams* params = (WriteFileParams*)user_data;
+
+    params->file->WriteFile(params);
+}
+
 
 //-----------------------------------------------------------------------------
 // Write to a file.
@@ -297,7 +313,29 @@ File::Status File::read(U32 size, char *dst, U32 *bytesRead)
 //-----------------------------------------------------------------------------
 File::Status File::write(U32 size, const char *src, U32 *bytesWritten)
 {
-    return IOError;
+    NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
+
+    WriteFileParams* params = new WriteFileParams;
+    params->size = size;
+    params->src = src;
+    params->file = psLocalFile;
+
+    PP_CompletionCallback callback = PP_MakeCompletionCallback(WriteFileFromMainThread, params);
+    naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+
+    //Wait for the read to complete.
+    params->_Waiter.acquire();
+
+    if(bytesWritten)
+    {
+        *bytesWritten = params->getTotalBytesWritten();
+    }
+
+    currentStatus = Ok;
+
+    delete params;
+
+    return currentStatus;
 }
 
 //-----------------------------------------------------------------------------

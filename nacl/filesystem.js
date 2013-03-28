@@ -109,4 +109,24 @@
 
 			},errorHandler);
 		}	
-	};
+	}
+	
+function showTorqueConsole() {
+
+  fileSystem.root.getFile('/myapp/console.log', {}, function(fileEntry) {
+
+    // Get a File object representing the file,
+    // then use FileReader to read its contents.
+    fileEntry.file(function(file) {
+       var reader = new FileReader();
+
+       reader.onloadend = function(e) {
+			createTorqueConsoleWindow(this.result);		
+       };
+
+       reader.readAsText(file);
+    }, errorHandler);
+
+  }, errorHandler);
+
+}

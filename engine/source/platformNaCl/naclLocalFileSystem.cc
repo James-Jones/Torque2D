@@ -41,9 +41,15 @@ public:
 };
 
 void LocalReadCallback(void* data, int32_t bytes_read) {
-    if (bytes_read < 0)
-        return;  // error
+
     LocalRead* dload = static_cast<LocalRead*>(data);
+
+    if (bytes_read < 0)
+    {
+        dload->semaphore->release();
+        return;  // error
+    }
+
     dload->bytesLeft -= bytes_read;
     
     if (dload->bytesLeft !=  0)
@@ -92,7 +98,7 @@ NaClLocalFile::NaClLocalFile(
         openFlags |= PP_FILEOPENFLAG_READ;
         break;
     case File::Write:
-        openFlags |= PP_FILEOPENFLAG_WRITE;
+        openFlags |= PP_FILEOPENFLAG_WRITE|PP_FILEOPENFLAG_CREATE;
         break;
     case File::ReadWrite:
         openFlags |= PP_FILEOPENFLAG_READ|PP_FILEOPENFLAG_WRITE;
@@ -157,6 +163,45 @@ void NaClLocalFile::ReadFile(ReadFileParams* params)
                             &lread.buffer[lread.bufferOffset],
                             lread.bytesLeft,
                             cb);
+}
+
+void LocalWriteCallback(void* data, int32_t bytes_written) {
+    WriteFileParams* params = static_cast<WriteFileParams*>(data);
+
+    if (bytes_written < 0)
+    {
+        params->_Waiter.release();
+        return;  // error
+    }
+
+    params->bytesLeft -= bytes_written;
+    params->totalBytesWritten += bytes_written;
+
+    if(params->bytesLeft != 0)
+    {
+        params->bufferOffset += bytes_written;
+
+        PP_CompletionCallback cb;
+        cb = PP_MakeCompletionCallback(LocalWriteCallback, params);
+
+        naclState.psFileIO->Write(params->file->getFile(), params->bufferOffset, params->src+params->bufferOffset, params->bytesLeft, cb);
+    }
+    else
+    {
+        params->_Waiter.release();
+    }
+}
+
+void NaClLocalFile::WriteFile(WriteFileParams* params)
+{
+    params->bytesLeft = params->size;
+
+    PP_CompletionCallback cb;
+    cb.func = LocalWriteCallback;
+    cb.user_data = params;
+    cb.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
+
+    naclState.psFileIO->Write(mFile, mFileOffset, params->src, params->size, cb);
 }
 
 void NaClLocalFile::CloseFile()

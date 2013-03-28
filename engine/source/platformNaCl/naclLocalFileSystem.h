@@ -21,6 +21,33 @@ public:
     }
 };
 
+class WriteFileParams
+{
+public:
+    U32 size;
+    const char *src;
+    NaClLocalFile* file;
+    Semaphore _Waiter;
+
+    WriteFileParams() : _Waiter(0), file(NULL), src(NULL), size(0),
+        bufferOffset(0), bytesLeft(0), totalBytesWritten(0)
+    {
+    }
+
+    U32 getTotalBytesWritten () const
+    {
+        return totalBytesWritten;
+    }
+
+private:
+//restrict access to NaClLocalFile
+friend class NaClLocalFile;
+friend void LocalWriteCallback(void* data, int32_t bytes_written);
+    U32 bufferOffset;
+    U32 bytesLeft;
+    U32 totalBytesWritten;
+};
+
 class OpenFileParams
 {
 public:
@@ -63,6 +90,8 @@ public:
     ~NaClLocalFile();
 
     void ReadFile(ReadFileParams* params);
+
+    void WriteFile(WriteFileParams* params);
 
     void CloseFile();
 
