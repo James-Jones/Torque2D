@@ -356,9 +356,12 @@ S32 dSprintf(char *buffer, U32 bufferSize, const char *format, ...)
 }
 
 
-S32 dVsprintf(char *buffer, U32 bufferSize, const char *format, void *arglist)
+S32 dVsprintf(char *buffer, U32 bufferSize, const char *format, va_list arglist)
 {
-    return 0;
+   bufferSize;
+   S32 len = vsprintf(buffer, format, arglist);
+   AssertFatal( (U32)len < bufferSize, "dVsprintf wrote to more memory than the specified buffer size - Stack Corruption Possible" );
+   return (len);
 }
 
 int dStrrev(char* str)
