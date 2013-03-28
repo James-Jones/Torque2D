@@ -129,7 +129,8 @@ NaClPlatState::NaClPlatState() : currentTime(0)
 
 void SwapBuffersCallback(void* user_data, int32_t result)
 {
-
+    Semaphore* sem = static_cast<Semaphore*>(user_data);
+    sem->release();
 }
 
 //Simple test
@@ -151,7 +152,7 @@ void SetContextMain(void* user_data, int32_t result)
 
 void SwapBuffers(void* user_data, int32_t result)
 {
-    PP_CompletionCallback cc = PP_MakeCompletionCallback(SwapBuffersCallback, 0);
+    PP_CompletionCallback cc = PP_MakeCompletionCallback(SwapBuffersCallback, user_data);
     naclState.psG3D->SwapBuffers(naclState.hRenderContext, cc);
 }
 
@@ -175,7 +176,9 @@ void LogicThread(void* data)
         PP_CompletionCallback callback = PP_MakeCompletionCallback(SetupFullscreenMode, 0);
         naclState.psCore->CallOnMainThread(0, callback, PP_OK);
 
-        if(Game->isRunning())
+        Semaphore swapBuffersWaiter;
+
+        while(Game->isRunning())
         {
             //glSetCurrentContextPPAPI(naclState.hRenderContext)
             PP_CompletionCallback callback = PP_MakeCompletionCallback(SetContextMain, 0);
@@ -194,7 +197,8 @@ void LogicThread(void* data)
             naclState.psCore->CallOnMainThread(0, callback, PP_OK);
 
             //SwapBuffers
-            callback = PP_MakeCompletionCallback(SwapBuffers, 0);
+            swapBuffersWaiter.acquire();//Wait for any pending SwapBuffers operation to finish.
+            callback = PP_MakeCompletionCallback(SwapBuffers, &swapBuffersWaiter);
             naclState.psCore->CallOnMainThread(0, callback, PP_OK);
         }
     }

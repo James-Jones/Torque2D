@@ -323,7 +323,7 @@ File::Status File::write(U32 size, const char *src, U32 *bytesWritten)
     PP_CompletionCallback callback = PP_MakeCompletionCallback(WriteFileFromMainThread, params);
     naclState.psCore->CallOnMainThread(0, callback, PP_OK);
 
-    //Wait for the read to complete.
+    //Wait for the write to complete.
     params->_Waiter.acquire();
 
     if(bytesWritten)
