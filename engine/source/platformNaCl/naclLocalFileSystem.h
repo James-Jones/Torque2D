@@ -16,9 +16,25 @@ public:
     NaClLocalFile* file;
     Semaphore _Waiter;
 
-    ReadFileParams() : _Waiter(), file(NULL), dst(NULL), size(0)
+    ReadFileParams() : _Waiter(0), file(NULL), dst(NULL), size(0)
     {
     }
+};
+
+class OpenFileParams
+{
+public:
+
+    OpenFileParams() : _Waiter(0), filename(""), openedFile(NULL)
+    {
+    }
+
+    //const char* filename;
+
+    std::string filename;
+    File::AccessMode openMode;
+    NaClLocalFile* openedFile;
+    Semaphore _Waiter;
 };
 
 class NaClLocalFile
@@ -29,8 +45,7 @@ class NaClLocalFile
 private:
     NaClLocalFile(
         PP_Resource fs,
-        const char* path,
-        const File::AccessMode openMode);
+        OpenFileParams* params);
 
     //Data members
     PP_Resource mFile;
@@ -42,7 +57,7 @@ private:
     U32 mBytesRead;
 
 public:
-    Semaphore _Waiter;
+    //Semaphore _Waiter;
 
 public:
     ~NaClLocalFile();
@@ -78,7 +93,7 @@ public:
 
     void RenameFile(const char* path, const char* newPath);
 
-    NaClLocalFile* OpenFile(const char* path, const File::AccessMode openMode);
+    NaClLocalFile* OpenFile(OpenFileParams* params);
 
 private:
 

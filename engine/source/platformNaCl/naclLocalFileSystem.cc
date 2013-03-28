@@ -75,17 +75,18 @@ void NaClLocalFile_FileOpenCallback(void*data, int32_t result);
 
 NaClLocalFile::NaClLocalFile(
     PP_Resource fs,
-    const char* path,
-    const File::AccessMode openMode) : mFileOffset(0), mFileBody(NULL) {
+    OpenFileParams* params) : mFileOffset(0), mFileBody(NULL) {
+
+    params->openedFile = this;
 
     mFileInfo.size = 0;
 
-    PP_Resource fileRef = naclState.psFileRef->Create(fs, path);
+    PP_Resource fileRef = naclState.psFileRef->Create(fs, params->filename.c_str());
     
     mFile = naclState.psFileIO->Create(naclState.hModule);
 
     int32_t openFlags = 0;
-    switch(openMode)
+    switch(params->openMode)
     {
     case File::Read:
         openFlags |= PP_FILEOPENFLAG_READ;
@@ -100,11 +101,10 @@ NaClLocalFile::NaClLocalFile(
 
     PP_CompletionCallback fileOpenCallback;
     fileOpenCallback.func = NaClLocalFile_FileOpenCallback;
-    fileOpenCallback.user_data = this;
+    fileOpenCallback.user_data = params;
     fileOpenCallback.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
 
     int32_t result = naclState.psFileIO->Open(mFile, fileRef, openFlags, fileOpenCallback);
-    _Waiter.acquire();
 
     AssertFatal(result == PP_OK_COMPLETIONPENDING, "File open failed");
 }
@@ -181,15 +181,17 @@ const U32 NaClLocalFile::getBytesRead() const {
 }
 
 void NaClLocalFile_FileQueryCallback(void*data, int32_t result) {
-    NaClLocalFile* file = static_cast<NaClLocalFile*>(data);
-    file->_Waiter.release();
+    OpenFileParams* params = static_cast<OpenFileParams*>(data);
+
+    params->_Waiter.release();
 }
 
 void NaClLocalFile_FileOpenCallback(void*data, int32_t result) {
-    NaClLocalFile* file = static_cast<NaClLocalFile*>(data);
+    OpenFileParams* params = static_cast<OpenFileParams*>(data);
+    NaClLocalFile* file = params->openedFile;
 
     if (result != PP_OK) {
-        file->_Waiter.release();
+        params->_Waiter.release();
         return;
     }
 
@@ -260,9 +262,10 @@ void NaClLocalFileSystem::RenameFile(const char* path, const char* newPath)
     naclState.psFileRef->Rename(fileRef, newFileRef, cb);
 }
 
-NaClLocalFile* NaClLocalFileSystem::OpenFile(const char* path, const File::AccessMode openMode)
+NaClLocalFile* NaClLocalFileSystem::OpenFile(OpenFileParams* params)
 {
-    return new NaClLocalFile(mFileSystem, (mRoot+path).c_str(), openMode);
+    params->filename = mRoot + params->filename;
+    return new NaClLocalFile(mFileSystem, params);
 }
 
 

@@ -116,19 +116,10 @@ File::~File()
     handle = (void *)NULL;
 }
 
-typedef struct
-{
-    const char* filename;
-    File::AccessMode openMode;
-    NaClLocalFile* openedFile;
-    Semaphore _Waiter;
-} OpenFileParams;
-
 void OpenFileFromMainThread(void* user_data, int32_t result)
 {
-    OpenFileParams* params = (OpenFileParams*)user_data;
-    params->openedFile = naclState.localFileSys.OpenFile(params->filename, params->openMode);
-    params->_Waiter.release();
+    OpenFileParams* params = static_cast<OpenFileParams*>(user_data);
+    params->openedFile = naclState.localFileSys.OpenFile(params);
 }
 
 //-----------------------------------------------------------------------------
@@ -154,9 +145,6 @@ File::Status File::open(const char *filename, const AccessMode openMode)
     AssertFatal(params->openedFile != NULL, "Failed to open file");
 
     handle = params->openedFile;
-
-    params->openedFile->_Waiter.acquire();
-    params->openedFile->_Waiter.release();
 
     currentStatus = Ok;
 
