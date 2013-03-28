@@ -98,10 +98,13 @@ NaClLocalFile::NaClLocalFile(
         openFlags |= PP_FILEOPENFLAG_READ;
         break;
     case File::Write:
-        openFlags |= PP_FILEOPENFLAG_WRITE|PP_FILEOPENFLAG_CREATE;
+        openFlags |= PP_FILEOPENFLAG_WRITE|PP_FILEOPENFLAG_CREATE|PP_FILEOPENFLAG_TRUNCATE;
         break;
     case File::ReadWrite:
         openFlags |= PP_FILEOPENFLAG_READ|PP_FILEOPENFLAG_WRITE;
+        break;
+    case File::WriteAppend:
+        openFlags |= PP_FILEOPENFLAG_WRITE;
         break;
     }
 
@@ -227,6 +230,11 @@ const U32 NaClLocalFile::getBytesRead() const {
 
 void NaClLocalFile_FileQueryCallback(void*data, int32_t result) {
     OpenFileParams* params = static_cast<OpenFileParams*>(data);
+
+    if(params->openMode == File::WriteAppend)
+    {
+        params->openedFile->setPosition(params->openedFile->getFileInfo()->size, true);
+    }
 
     params->_Waiter.release();
 }
