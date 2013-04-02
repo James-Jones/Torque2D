@@ -24,6 +24,20 @@
 #include <ppapi\cpp\logging.h>
 #include<cstring>
 
+/* Fix link failure about missing kill function */
+extern "C" {
+    #define __MYPID 1
+
+    int
+    kill (int pid,
+          int sig)
+    {
+      if(pid == __MYPID)
+        _exit(sig);
+      return 0;
+    }
+}
+
 void Platform::postQuitMessage(const U32 in_quitVal)
 {
    PP_DCHECK(in_quitVal);
@@ -57,7 +71,7 @@ static void SendStringMainThreadCallback(void* user_data, int32_t result)
 {
     std::string* str = (std::string*) (user_data);
     PP_Var naclString = CStrToVar(str->c_str());
-	naclState.psMessagingInterface->PostMessage(naclState.hModule, naclString);
+	naclState.psConsole->Log(naclState.hModule, PP_LOGLEVEL_LOG, naclString);
     naclState.psVarInterface->Release(naclString);
     delete str;
 }
@@ -67,7 +81,7 @@ void Platform::outputDebugString( const char *string )
     if(naclState.psCore->IsMainThread())
     {
         PP_Var naclString = CStrToVar(string);
-        naclState.psMessagingInterface->PostMessage(naclState.hModule, naclString);
+        naclState.psConsole->Log(naclState.hModule, PP_LOGLEVEL_LOG, naclString);
         naclState.psVarInterface->Release(naclString);
     }
     else

@@ -257,7 +257,6 @@ static void Instance_DidChangeView(PP_Instance instance,
 
     Platform::setWindowSize( naclState.i32PluginWidth, naclState.i32PluginHeight );
 
-
     if(naclState.hRenderContext == 0)
     {
 	    int32_t attribs[] = {
@@ -437,10 +436,9 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
 
     naclState.psURLResponseInfo = (PPB_URLResponseInfo*) get_browser(PPB_URLRESPONSEINFO_INTERFACE);
 
-#ifdef PPAPI_25
     naclState.psConsole = (PPB_Console*) get_browser(PPB_CONSOLE_INTERFACE);
+
     naclState.psMessageLoop = (PPB_MessageLoop*) get_browser(PPB_MESSAGELOOP_INTERFACE);
-#endif
 
     return PP_OK;
 }

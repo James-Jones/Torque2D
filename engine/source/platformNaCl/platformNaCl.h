@@ -37,11 +37,8 @@
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_url_response_info.h"
-
-#ifdef PPAPI_25
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_message_loop.h"
-#endif
 
 #include "ppapi/gles2/gl2ext_ppapi.h"
 
@@ -81,10 +78,8 @@ struct NaClPlatState
     PPB_FileSystem* psFileSys;
     PPB_URLResponseInfo* psURLResponseInfo;
 
-#ifdef PPAPI_25
     PPB_Console* psConsole;
     PPB_MessageLoop* psMessageLoop;
-#endif
 
     U32 currentTime;
 
