@@ -930,6 +930,7 @@
     <ClCompile Include="..\..\source\platformNaCl\naclMath.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclMemory.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclNet.cc" />
+    <ClCompile Include="..\..\source\platformNaCl\naclOGLVideo.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclProcessControl.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclSemaphore.cc" />
     <ClCompile Include="..\..\source\platformNaCl\naclStrings.cc" />
@@ -1335,6 +1336,7 @@
     <ClInclude Include="..\..\source\math\mSplinePatch.h" />
     <ClInclude Include="..\..\source\persistence\SimXMLDocument.h" />
     <ClInclude Include="..\..\source\platformNaCl\naclLocalFileSystem.h" />
+    <ClInclude Include="..\..\source\platformNaCl\naclOGLVideo.h" />
     <ClInclude Include="..\..\source\platformNaCl\platformGL.h" />
     <ClInclude Include="..\..\source\platformNaCl\platformNaCl.h" />
     <ClInclude Include="..\..\source\platform\event.h" />

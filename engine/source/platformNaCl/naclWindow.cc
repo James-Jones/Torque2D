@@ -1,6 +1,7 @@
 #include "platformNaCl/platformNaCl.h"
 #include "platformNaCl/platformGL.h"
 #include "platform/platformVideo.h"
+#include "platformNaCl/naclOGLVideo.h"
 #include "console/console.h"
 #include "game/gameInterface.h"
 #include "math/mPoint.h"
@@ -27,6 +28,33 @@ void Platform::shutdown()
 
 void Platform::initWindow(const Point2I &initialSize, const char *name)
 {
+    DisplayDevice* videoDevice = OpenGLDevice::create();
+
+    if ( Video::installDevice( videoDevice ) )
+      Con::printf( "   Accelerated OpenGL display device detected." );
+
+
+   bool fullScreen = Con::getBoolVariable( "$pref::Video::fullScreen" );
+
+   const char* resString = Con::getVariable( ( fullScreen  ? "$pref::Video::resolution" : "$pref::Video::windowedRes" ) );
+
+   // Get the video settings from the prefs:
+   char* tempBuf = new char[dStrlen( resString ) + 1];
+   dStrcpy( tempBuf, resString );
+   char* temp = dStrtok( tempBuf, " x\0" );
+   //MIN_RESOLUTION defined in platformWin32/platformGL.h
+   U32 width = ( temp ? dAtoi( temp ) : MIN_RESOLUTION_X );
+   temp = dStrtok( NULL, " x\0" );
+   U32 height = ( temp ? dAtoi( temp ) : MIN_RESOLUTION_Y );
+   temp = dStrtok( NULL, "\0" );
+   U32 bpp = ( temp ? dAtoi( temp ) : MIN_RESOLUTION_BIT_DEPTH );
+   delete [] tempBuf;
+
+    if ( !Video::setDevice( videoDevice->mDeviceName, width, height, bpp, fullScreen ) )
+    {             
+         AssertFatal( false, "Could not find a compatible display device!" );
+          return;
+    }
 }
 
 void Platform::setWindowTitle( const char* title )
