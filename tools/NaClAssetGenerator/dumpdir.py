@@ -25,20 +25,21 @@ def dumpAllDirs(writeRoot):
 			naclfulldirs.write(os.path.join(root.replace('../../', '', 1), d+'\n'))
 	naclfulldirs.close()
 
-def writeRootFiles(prefix, rootDir, writeFilePrefix):
-	dirContents = os.listdir(os.path.join(prefix, rootDir))
+def writeRootFiles( rootReadDir, rootWriteDir):
+	dirContents = os.listdir(rootReadDir)
 	
-	if not os.path.exists(os.path.join(writeFilePrefix, rootDir)):
-		os.makedirs(os.path.join(writeFilePrefix, rootDir))
+	if not os.path.exists(rootWriteDir):
+		os.makedirs(rootWriteDir)
 
 	for entry in dirContents:
-		if os.path.isdir( os.path.abspath(os.path.join(prefix, rootDir, entry)) ):
-			writeRootFiles(prefix, os.path.join(rootDir, entry), writeFilePrefix)
-			nacldirs = open( os.path.join(writeFilePrefix, rootDir, 'dirs.txt'), "a")
+		if os.path.isdir( os.path.abspath(os.path.join(rootReadDir, entry)) ):
+
+			writeRootFiles(os.path.join(rootReadDir, entry), os.path.join(rootWriteDir, entry))
+			nacldirs = open( os.path.join(rootWriteDir, 'dirs.txt'), "a")
 			nacldirs.write(entry+'\n')
 			nacldirs.close()
 		else:
-			naclfiles = open(os.path.join(writeFilePrefix, rootDir, 'files.txt'),  "a")
+			naclfiles = open(os.path.join(rootWriteDir, 'files.txt'),  "a")
 			naclfiles.write(entry+'\n')
 			naclfiles.close()
 			
@@ -46,11 +47,11 @@ if __name__ == '__main__':
 
 	srcdir = '../../'
 	if(options.srcdir):
-		srcdir = options.srcdir
+		srcdir = os.path.abspath(options.srcdir)
 	dstdir = ''
 	if(options.dstdir):
-		dstdir = options.dstdir
+		dstdir = os.path.abspath(options.dstdir)
 		
 	shutil.rmtree(srcdir + '/dirdump/', ignore_errors=True)
-	writeRootFiles(srcdir,'modules/', dstdir+'/dirdump/')
+	writeRootFiles(srcdir, dstdir+'/dirdump/')
 

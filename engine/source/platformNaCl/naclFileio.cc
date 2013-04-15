@@ -476,77 +476,122 @@ void Platform::openFolder(const char* path )
 static bool recurseDumpPath(const char *path, Vector<Platform::FileInfo> &fileVector, S32 recurseDepth )
 {
     char fullFilePath[1024];
-    char fullDirPath[1024];
 
     //Platform::makeFullPathName(path, fullPath, sizeof(fullPath));
 
     dSprintf(fullFilePath, sizeof(fullFilePath), "dirdump/%s/files.txt", path);
-    dSprintf(fullDirPath, sizeof(fullDirPath), "dirdump/%s/dirs.txt", path);
 
     bool success = false;
     FileStream fileStream;
 
     success = fileStream.open( fullFilePath, FileStream::Read);
 
-    if(success == false)
+    //Add all files in this directory to the vector
+    if(success == true)
     {
-        //No files in this directory search.
-        return true;
-    }
+        const U32 size = fileStream.getStreamSize();
+        char* pFileContents = new char[size + 1];
+        // Read script.
+        fileStream.read(size, pFileContents);
+        fileStream.close();
+        pFileContents[size] = 0;
 
-    const U32 size = fileStream.getStreamSize();
-    char* pFileContents = new char[size + 1];
-    // Read script.
-    fileStream.read(size, pFileContents);
-    fileStream.close();
-    pFileContents[size] = 0;
+        std::string fileList(pFileContents);
+        delete pFileContents;
+        pFileContents = NULL;
+        size_t startPos = 0;
+        size_t endPos;
 
-    std::string fileList(pFileContents);
-    delete pFileContents;
-    pFileContents = NULL;
-    size_t startPos = 0;
-    size_t endPos;
+        const char* lineEnding = "\r\n";
+        const int lineEndingCharCount = 2;
 
-    const char* lineEnding = "\r\n";
-    const int lineEndingCharCount = 2;
-
-    endPos = fileList.find(lineEnding, startPos);
-    //Each line in the file
-    while(endPos != std::string::npos)
-    {
-        std::string str = fileList.substr(startPos, endPos-startPos);
-        const char* fileName = str.c_str();
-
-         // add it to the list
-         fileVector.increment();
-         Platform::FileInfo& rInfo = fileVector.last();
-
-         rInfo.pFullPath = StringTable->insert(path);
-         rInfo.pFileName = StringTable->insert(fileName);
-
-         dSprintf(fullFilePath, sizeof(fullFilePath), "dirdump/%s/%s", path, fileName);
-
-         success = fileStream.open( fullFilePath, FileStream::Read);
-         if(success == false)
-         {
-             return false;
-         }
-         rInfo.fileSize = fileStream.getStreamSize();
-         fileStream.close();
-
-        startPos = endPos+lineEndingCharCount;
         endPos = fileList.find(lineEnding, startPos);
+        //Each line in the file
+        while(endPos != std::string::npos)
+        {
+            char subFilePath[1024];
+            std::string str = fileList.substr(startPos, endPos-startPos);
+            const char* fileName = str.c_str();
+
+            startPos = endPos+lineEndingCharCount;
+            endPos = fileList.find(lineEnding, startPos);
+
+             // add it to the list
+             fileVector.increment();
+             Platform::FileInfo& rInfo = fileVector.last();
+
+             rInfo.pFullPath = StringTable->insert(path);
+             rInfo.pFileName = StringTable->insert(fileName);
+
+             dSprintf(subFilePath, sizeof(subFilePath), "%s/%s", path, fileName);
+
+             success = fileStream.open( subFilePath, FileStream::Read);
+             if(success == false)
+             {
+                 return false;
+             }
+             rInfo.fileSize = fileStream.getStreamSize();
+             fileStream.close();
+        }
     }
 
-    if( recurseDepth > 0 )
+    //Move on the next directory
+    if(recurseDepth > 0 || recurseDepth == -1)
     {
-        return false;
-        //recurseDumpPath(child, pattern, fileVector, recurseDepth - 1);
-    }
-    else if (recurseDepth == -1)
-    {
-        return false;
-        //recurseDumpPath(child, pattern, fileVector, -1);
+        char fullDirPath[1024];
+        dSprintf(fullDirPath, sizeof(fullDirPath), "dirdump/%s/dirs.txt", path);
+
+        success = fileStream.open( fullDirPath, FileStream::Read);
+
+        if(success)
+        {
+            const U32 size = fileStream.getStreamSize();
+            char* pFileContents = new char[size + 1];
+            // Read script.
+            fileStream.read(size, pFileContents);
+            fileStream.close();
+            pFileContents[size] = 0;
+
+            std::string dirList(pFileContents);
+            delete pFileContents;
+            pFileContents = NULL;
+            size_t startPos = 0;
+            size_t endPos;
+
+            const char* lineEnding = "\r\n";
+            const int lineEndingCharCount = 2;
+
+            endPos = dirList.find(lineEnding, startPos);
+            //Each line in the file
+            while(endPos != std::string::npos)
+            {
+                char subDirPath [1024];
+                std::string str = dirList.substr(startPos, endPos-startPos);
+                const char* childDir = str.c_str();
+
+                startPos = endPos+lineEndingCharCount;
+                endPos = dirList.find(lineEnding, startPos);
+
+                // skip . and .. directories
+                if (dStrcmp(childDir, ".") == 0 || dStrcmp(childDir, "..") == 0)
+                   continue;
+
+                // Skip excluded directores
+                if(Platform::isExcludedDirectory(childDir))
+                   continue;
+
+                dSprintf(subDirPath, sizeof(subDirPath), "%s/%s", path, childDir);
+
+                if( recurseDepth > 0 )
+                {
+                    recurseDumpPath(subDirPath, fileVector, recurseDepth - 1);
+                }
+                else if (recurseDepth == -1)
+                {
+                    recurseDumpPath(subDirPath, fileVector, -1);
+                }
+            }
+        }
     }
 
     return true;
@@ -735,7 +780,8 @@ static bool recurseDumpDirectories(const char *basePath, const char *subPath, Ve
         std::string str = dirList.substr(startPos, endPos-startPos);
         const char* dirName = str.c_str();
 
-         //const char * dirName = (const char *) fileObj.readLine();
+        startPos = endPos+lineEndingCharCount;
+        endPos = dirList.find(lineEnding, startPos);
 
          // skip . and .. directories
          if (dStrcmp((const char *)dirName, ".") == 0 || dStrcmp((const char *)dirName, "..") == 0)
@@ -770,9 +816,6 @@ static bool recurseDumpDirectories(const char *basePath, const char *subPath, Ve
             if( currentDepth < recurseDepth || recurseDepth == -1 )
                recurseDumpDirectories(basePath, child, directoryVector, currentDepth+1, recurseDepth, noBasePath );
          }
-
-        startPos = endPos+lineEndingCharCount;
-        endPos = dirList.find(lineEnding, startPos);
     }
 
    return true;
