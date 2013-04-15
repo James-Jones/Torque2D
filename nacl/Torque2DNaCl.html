@@ -9,24 +9,28 @@ found in the LICENSE file.
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="-1">
   <title>Torque2D</title>
+ 
   <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
-  
-  <!-- Code to get jquery from web
-  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-  <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
-  -->
   
   <script type="text/javascript" src="zip/zip.js"></script>
   <script type="text/javascript" src="zip/deflate.js"></script>
+  <script type="text/javascript" src="zip/zip-ext.js"></script>
+  <script type="text/javascript" src="zip/zip-fs.js"></script>
+  <script type="text/javascript" src="zip/inflate.js"></script>
+  <script type="text/javascript" src="zip/mime-types.js"></script>
+  
   <script type="text/javascript" src="filesystem.js"></script>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="keypress.js"></script>
   <script type="text/javascript" src="torqueConsoleWindow.js"></script>
   <script>
+  function localStorageReady()
+  {
+	common.onload('Torque2D', 640, 480);
+  }
   function bodyLoad(name, width, height)
   {
-	initLocalStorage(128*1024*1024, "myapp", "Torque2DNaClAssets.zip");
-	common.onload(name, width, height);
+	initLocalStorage(128*1024*1024, "main", "Torque2DNaClAssets.zip", localStorageReady);
   }
   </script>
   

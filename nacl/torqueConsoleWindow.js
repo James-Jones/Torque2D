@@ -10,7 +10,5 @@ function createTorqueConsoleWindow(consoleString) {
 	txtArea.value = consoleString;
 	myWindow.document.body.appendChild(txtArea);
 	
-	//myWindow.document.write(consoleString)
-	
 	myWindow.focus()
 }

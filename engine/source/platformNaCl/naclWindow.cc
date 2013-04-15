@@ -7,12 +7,17 @@
 #include "al/alc.h"
 #include <string>
 
+#include "io/zip/zipArchive.h"
+
 NaClPlatState naclState;
 
 void Platform::init()
 {
    // Set the platform variable for the scripts
    Con::setVariable( "$platform", "nacl" );
+
+   //Unpack Zip archive of game assets.
+   NaClLocalFileSystem::Unpack();
 }
 
 void Platform::shutdown()
@@ -220,7 +225,7 @@ void NaClInit(void* user_data, int32_t result)
 {
     //Open the file system asynchronously.
     //Once completed, call ScheduleInitGame.
-    naclState.localFileSys.Open("//myapp/", 128*1024*1024, StartLogicThread);
+    naclState.localFileSys.Open("/", 128*1024*1024, StartLogicThread);
 }
 
 static PP_Bool Instance_DidCreate(PP_Instance instance,

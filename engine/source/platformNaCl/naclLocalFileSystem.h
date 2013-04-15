@@ -78,10 +78,14 @@ private:
     PP_Resource mFile;
     PP_FileInfo mFileInfo;
     char* mFileBody;
-    bool mReady;
+    bool mOpened;
 
     S32 mFileOffset;
     U32 mBytesRead;
+
+#ifdef TORQUE_DEBUG
+    std::string debugFilename;
+#endif
 
 public:
     //Semaphore _Waiter;
@@ -99,6 +103,10 @@ public:
 
     U32 getPosition() const;
 
+    bool IsOpened() const {
+        return mOpened;
+    }
+
     PP_Resource getFile() const;
     const PP_FileInfo* getFileInfo() const;
     PP_FileInfo* getFileInfo();
@@ -106,6 +114,18 @@ public:
     const U32 getBytesRead() const;
 };
 
+class MakeDirParams
+{
+public:
+
+    MakeDirParams() : _Waiter(0), path(""), makeAncestors(PP_TRUE)
+    {
+    }
+
+    const char* path;
+    Semaphore _Waiter;
+    PP_Bool makeAncestors;
+};
 
 class NaClLocalFileSystem
 {
@@ -115,14 +135,17 @@ public:
     NaClLocalFileSystem();
 
     void Open(const char* root, int64_t sizeInBytes, PP_CompletionCallback_Func callback);
+    void SetDirectory(const char* path);
 
-    void MakeDirectory(const char* path);
+    void MakeDirectory(MakeDirParams* params);
 
     void DeleteFile(const char* path);
 
     void RenameFile(const char* path, const char* newPath);
 
     NaClLocalFile* OpenFile(OpenFileParams* params);
+
+    static void Unpack();
 
 private:
 

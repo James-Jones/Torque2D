@@ -28,6 +28,7 @@
 #include "console/console.h"
 #include "io/resource/resourceManager.h"
 #include "string/unicode.h"
+#include "io/fileObject.h"
 
 #include <time.h>
 #include <sys/utime.h>
@@ -142,14 +143,39 @@ File::Status File::open(const char *filename, const AccessMode openMode)
     naclState.psCore->CallOnMainThread(0, callback, PP_OK);
     params->_Waiter.acquire();
 
-    AssertFatal(params->openedFile != NULL, "Failed to open file");
+    if(params->openedFile == NULL || params->openedFile->IsOpened()==false)
+    {
+        handle = NULL;
+        currentStatus = IOError;
+        if(params->openedFile)
+        {
+            delete params->openedFile;
+        }
+    }
+    else
+    {
+        switch (openMode)
+        {
+        case Read:
+            capability = U32(FileRead);
+            break;
+        case Write:
+        case WriteAppend:
+            capability = U32(FileWrite);
+            break;
+        case ReadWrite:
+            capability = U32(FileRead)  |
+                         U32(FileWrite);
+            break;
+        default:
+            AssertFatal(false, "File::open: bad access mode");
+        }
 
-    handle = params->openedFile;
-
-    currentStatus = Ok;
+        handle = params->openedFile;
+        currentStatus = Ok;
+    }
 
     delete params;
-
     return currentStatus;
 }
 
@@ -223,10 +249,13 @@ void CloseFileFromMainThread(void* user_data, int32_t result)
 //-----------------------------------------------------------------------------
 File::Status File::close()
 {
-    NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
+    if(handle)
+    {
+        NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
 
-    PP_CompletionCallback callback = PP_MakeCompletionCallback(CloseFileFromMainThread, psLocalFile);
-    naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+        PP_CompletionCallback callback = PP_MakeCompletionCallback(CloseFileFromMainThread, psLocalFile);
+        naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+    }
 
     return currentStatus = Closed;
 }
@@ -270,6 +299,15 @@ void ReadFileFromMainThread(void* user_data, int32_t result)
 //-----------------------------------------------------------------------------
 File::Status File::read(U32 size, char *dst, U32 *bytesRead)
 {
+    AssertFatal(Closed != currentStatus, "File::read: file closed");
+    AssertFatal(NULL != handle, "File::read: invalid file handle");
+    AssertFatal(NULL != dst, "File::read: NULL destination pointer");
+    AssertFatal(true == hasCapability(FileRead), "File::read: file lacks capability");
+    AssertWarn(0 != size, "File::read: size of zero");
+
+    if (Ok != currentStatus || 0 == size)
+        return currentStatus;
+
     NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
 
     ReadFileParams* params = new ReadFileParams;
@@ -290,7 +328,16 @@ File::Status File::read(U32 size, char *dst, U32 *bytesRead)
         *bytesRead = psLocalFile->getBytesRead();
     }
 
-    currentStatus = Ok;
+    psLocalFile->setPosition(psLocalFile->getBytesRead(), false);
+
+    if(psLocalFile->getBytesRead() != size)
+    {
+        currentStatus = EOS;
+    }
+    else
+    {
+        currentStatus = Ok;
+    }
 
     delete params;
 
@@ -313,6 +360,15 @@ void WriteFileFromMainThread(void* user_data, int32_t result)
 //-----------------------------------------------------------------------------
 File::Status File::write(U32 size, const char *src, U32 *bytesWritten)
 {
+    AssertFatal(Closed != currentStatus, "File::write: file closed");
+    AssertFatal(NULL != handle, "File::write: invalid file handle");
+    AssertFatal(NULL != src, "File::write: NULL source pointer");
+    AssertFatal(true == hasCapability(FileWrite), "File::write: file lacks capability");
+    AssertWarn(0 != size, "File::write: size of zero");
+
+    if ((Ok != currentStatus && EOS != currentStatus) || 0 == size)
+        return currentStatus;
+
     NaClLocalFile* psLocalFile = (NaClLocalFile*)handle;
 
     WriteFileParams* params = new WriteFileParams;
@@ -330,6 +386,8 @@ File::Status File::write(U32 size, const char *src, U32 *bytesWritten)
     {
         *bytesWritten = params->getTotalBytesWritten();
     }
+
+    psLocalFile->setPosition(params->getTotalBytesWritten(), false);
 
     currentStatus = Ok;
 
@@ -358,9 +416,56 @@ bool Platform::getFileTimes(const char *filePath, FileTime *createTime, FileTime
    return false;
 }
 
+void MakeDirFromMainThread(void* user_data, int32_t result)
+{
+    MakeDirParams* params = static_cast<MakeDirParams*>(user_data);
+    naclState.localFileSys.MakeDirectory(params);
+}
+
 bool Platform::createPath(const char *file)
 {
-    return false;
+   char pathbuf[1024];
+   const char *dir;
+   pathbuf[0] = 0;
+   U32 pathLen = 0;
+
+#if 0
+   while((dir = dStrchr(file, '/')) != NULL)
+   {
+      dStrncpy(pathbuf + pathLen, file, dir - file);
+      pathbuf[pathLen + dir-file] = 0;
+
+      MakeDirParams params;
+      params.path = pathbuf;
+      PP_CompletionCallback callback = PP_MakeCompletionCallback(MakeDirFromMainThread, &params);
+      naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+
+      params._Waiter.acquire();
+
+      pathLen += dir - file;
+      pathbuf[pathLen++] = '/';
+      file = dir + 1;
+   }
+#else
+
+      dir = dStrrchr(file, '/');
+
+      if(dir != NULL)
+      {
+          const dsize_t len = dir - file;
+          dStrncpy(pathbuf, file, len);
+          pathbuf[len] = 0;
+
+          MakeDirParams params;
+          params.path = pathbuf;
+          PP_CompletionCallback callback = PP_MakeCompletionCallback(MakeDirFromMainThread, &params);
+          naclState.psCore->CallOnMainThread(0, callback, PP_OK);
+
+          params._Waiter.acquire();
+      }
+
+#endif
+   return true;
 }
 
 void Platform::openFolder(const char* path )
@@ -368,9 +473,87 @@ void Platform::openFolder(const char* path )
 }
 
 //--------------------------------------
+static bool recurseDumpPath(const char *path, Vector<Platform::FileInfo> &fileVector, S32 recurseDepth )
+{
+    char fullFilePath[1024];
+    char fullDirPath[1024];
+
+    //Platform::makeFullPathName(path, fullPath, sizeof(fullPath));
+
+    dSprintf(fullFilePath, sizeof(fullFilePath), "dirdump/%s/files.txt", path);
+    dSprintf(fullDirPath, sizeof(fullDirPath), "dirdump/%s/dirs.txt", path);
+
+    bool success = false;
+    FileStream fileStream;
+
+    success = fileStream.open( fullFilePath, FileStream::Read);
+
+    if(success == false)
+    {
+        //No files in this directory search.
+        return true;
+    }
+
+    const U32 size = fileStream.getStreamSize();
+    char* pFileContents = new char[size + 1];
+    // Read script.
+    fileStream.read(size, pFileContents);
+    fileStream.close();
+    pFileContents[size] = 0;
+
+    std::string fileList(pFileContents);
+    delete pFileContents;
+    pFileContents = NULL;
+    size_t startPos = 0;
+    size_t endPos;
+
+    const char* lineEnding = "\r\n";
+    const int lineEndingCharCount = 2;
+
+    endPos = fileList.find(lineEnding, startPos);
+    //Each line in the file
+    while(endPos != std::string::npos)
+    {
+        std::string str = fileList.substr(startPos, endPos-startPos);
+        const char* fileName = str.c_str();
+
+         // add it to the list
+         fileVector.increment();
+         Platform::FileInfo& rInfo = fileVector.last();
+
+         rInfo.pFullPath = StringTable->insert(path);
+         rInfo.pFileName = StringTable->insert(fileName);
+
+         dSprintf(fullFilePath, sizeof(fullFilePath), "dirdump/%s/%s", path, fileName);
+
+         success = fileStream.open( fullFilePath, FileStream::Read);
+         if(success == false)
+         {
+             return false;
+         }
+         rInfo.fileSize = fileStream.getStreamSize();
+         fileStream.close();
+
+        startPos = endPos+lineEndingCharCount;
+        endPos = fileList.find(lineEnding, startPos);
+    }
+
+    if( recurseDepth > 0 )
+    {
+        return false;
+        //recurseDumpPath(child, pattern, fileVector, recurseDepth - 1);
+    }
+    else if (recurseDepth == -1)
+    {
+        return false;
+        //recurseDumpPath(child, pattern, fileVector, -1);
+    }
+
+    return true;
+}
 bool Platform::dumpPath(const char *path, Vector<Platform::FileInfo> &fileVector, S32 recurseDepth)
 {
-   return false;
+   return recurseDumpPath(path, fileVector, recurseDepth );
 }
 
 
@@ -428,11 +611,180 @@ bool Platform::hasSubDirectory(const char *pPath)
    return false;
 }
 
+static bool recurseDumpDirectories(const char *basePath, const char *subPath, Vector<StringTableEntry> &directoryVector, S32 currentDepth, S32 recurseDepth, bool noBasePath)
+{
+   char search[1024];
+
+   //-----------------------------------------------------------------------------
+   // Compose our search string - Format : ([path]/[subpath]/)
+   //-----------------------------------------------------------------------------
+
+   char trail = basePath[ dStrlen(basePath) - 1 ];
+   char subTrail;
+   char subLead;
+   if( subPath )
+   {
+       subTrail = subPath[ dStrlen(subPath) - 1 ];
+       subLead = subPath[0];
+   }
+
+
+   if( trail == '/' )
+   {
+      // we have a sub path and it's not an empty string
+      if(  subPath  && ( dStrncmp( subPath, "", 1 ) != 0 ) )
+      {
+         if( subTrail == '/' )
+            dSprintf(search, 1024, "%s%s", basePath,subPath );
+         else
+            dSprintf(search, 1024, "%s%s/", basePath,subPath );
+      }
+      else
+         dSprintf( search, 1024, "%s", basePath );
+   }
+   else
+   {
+      if(  subPath  && ( dStrncmp( subPath, "", 1 ) != 0 ) )
+         if( subTrail == '/' )
+            dSprintf(search, 1024, "%s%s", basePath,subPath );
+         else
+            dSprintf(search, 1024, "%s%s/", basePath,subPath );
+      else
+         dSprintf(search, 1024, "%s/", basePath );
+   }
+
+
+    //Open text file listing the subdirectories
+    bool success = false;
+    FileStream fileStream;
+
+    {
+        std::string dirPath("dirdump/");
+        dirPath += std::string(search);
+        dirPath += std::string("dirs.txt");
+
+        success = fileStream.open( dirPath.c_str(), FileStream::Read);
+
+        if(success == false)
+        {
+            //No subdirectories left to search.
+            return true;
+        }
+    }
+
+   //-----------------------------------------------------------------------------
+   // add path to our return list ( provided it is valid )
+   //-----------------------------------------------------------------------------
+   if( !Platform::isExcludedDirectory( subPath ) )
+   {
+
+      if( noBasePath )
+      {
+         // We have a path and it's not an empty string or an excluded directory
+         if( ( subPath  && ( dStrncmp( subPath, "", 1 ) != 0 ) ) )
+            directoryVector.push_back( StringTable->insert( subPath ) );
+      }
+      else
+      {
+         if( ( subPath  && ( dStrncmp( subPath, "", 1 ) != 0 ) ) )
+         {
+            char szPath [ 1024 ];
+            dMemset( szPath, 0, 1024 );
+            if ( trail == '/' )
+            {
+                if ( subLead == '/' )
+                   dSprintf( szPath, 1024, "%s%s", basePath, &subPath[1] );
+                else
+                   dSprintf( szPath, 1024, "%s%s", basePath, subPath );
+            }
+            else
+            {
+                if( subLead == '/' )
+                   dSprintf( szPath, 1024, "%s%s", basePath, subPath );
+                else
+                   dSprintf( szPath, 1024, "%s/%s", basePath, subPath );
+            }
+            directoryVector.push_back( StringTable->insert( szPath ) );
+         }
+         else
+            directoryVector.push_back( StringTable->insert( basePath ) );
+      }
+   }
+
+    // Create a script buffer.
+    const U32 size = fileStream.getStreamSize();
+    char* pFileContents = new char[size + 1];
+    // Read script.
+    fileStream.read(size, pFileContents);
+    fileStream.close();
+    pFileContents[size] = 0;
+
+    std::string dirList(pFileContents);
+    delete pFileContents;
+    pFileContents = NULL;
+    size_t startPos = 0;
+    size_t endPos;
+
+    const char* lineEnding = "\r\n";
+    const int lineEndingCharCount = 2;
+
+    endPos = dirList.find(lineEnding, startPos);
+    //Each line in the file
+    while(endPos != std::string::npos)
+    {
+        std::string str = dirList.substr(startPos, endPos-startPos);
+        const char* dirName = str.c_str();
+
+         //const char * dirName = (const char *) fileObj.readLine();
+
+         // skip . and .. directories
+         if (dStrcmp((const char *)dirName, ".") == 0 || dStrcmp((const char *)dirName, "..") == 0)
+            continue;
+
+         // skip excluded directories
+         if( Platform::isExcludedDirectory( (const char *)dirName ) )
+            continue;
+
+         if( ( subPath  && ( dStrncmp( subPath, "", 1 ) != 0 ) ))
+         {
+            char child[1024];
+
+            if( subTrail == '/' )
+               dSprintf(child, sizeof(child), "%s%s", subPath, dirName);
+            else
+               dSprintf(child, sizeof(child), "%s/%s", subPath, dirName);
+
+            if( currentDepth < recurseDepth || recurseDepth == -1 )
+               recurseDumpDirectories(basePath, child, directoryVector, currentDepth+1, recurseDepth, noBasePath );
+
+         }
+         else
+         {
+            char child[1024];
+
+            if( trail == '/' )
+               dStrcpy( child, (const char *)dirName );
+            else
+               dSprintf(child, sizeof(child), "/%s", dirName);
+
+            if( currentDepth < recurseDepth || recurseDepth == -1 )
+               recurseDumpDirectories(basePath, child, directoryVector, currentDepth+1, recurseDepth, noBasePath );
+         }
+
+        startPos = endPos+lineEndingCharCount;
+        endPos = dirList.find(lineEnding, startPos);
+    }
+
+   return true;
+}
+
 bool Platform::dumpDirectories( const char *path, Vector<StringTableEntry> &directoryVector, S32 depth, bool noBasePath )
 {
    ResourceManager->initExcludedDirectories();
 
-   bool retVal = false;
+   bool retVal =  recurseDumpDirectories( path, "", directoryVector, -1, depth, noBasePath );
+
+   clearExcludedDirectories();
 
    return retVal;
 }

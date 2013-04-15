@@ -34,8 +34,9 @@ if __name__ == '__main__':
 	if(options.dstdir):
 		dstdir = options.dstdir
 
-	zip = zipfile.ZipFile(dstdir+'Torque2DNaClAssets.zip', 'w', zipfile.ZIP_DEFLATED)
+	zip = zipfile.ZipFile(dstdir+'Torque2DNaClAssets.zip', mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=False)
 	zip.write(srcdir+'main.cs', 'main.cs')
 	zipdir(srcdir+'modules/', srcdir, zip)
+	zipdir(srcdir+'dirdump/', srcdir, zip)
 	zip.close()
 	writeDateTimeStamp(dstdir)
